@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,6 +165,7 @@
             display: flex;
             gap: 4px;
             margin-bottom: 8px;
+            flex-wrap: wrap;
         }
         .preset-btn, .model-btn {
             flex: 1;
@@ -178,6 +178,7 @@
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
+            min-width: 60px;
         }
         .preset-btn:hover, .model-btn:hover {
             background: rgba(255, 255, 255, 0.15);
@@ -373,7 +374,7 @@
         </div>
 
         <div class="control-content">
-            <p>Interactive visualization of a massive galaxy cluster bending light from background layers.</p>
+            <p>Interactive visualization of a massive cluster or a cosmic void bending light from background layers.</p>
             <p id="credit-text" class="credit-text">Concept & Visualization by Nico Schuster and Andres Salcedo</p>
             <p class="credit-text" style="margin-top: -8px;">
             <a href="https://github.com/nicosmo/lensing_visualization/" target="_blank" style="color: #4facfe; text-decoration: none;">View on GitHub</a>
@@ -384,15 +385,22 @@
                 <div class="model-options">
                     <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
                     <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
+                    <button class="model-btn" id="btn-model-void" data-model="2">Voids</button>
                 </div>
             </div>
 
             <div class="control-group">
                 <label>Background Source</label>
-                <div class="grid-options">
-                    <button class="preset-btn active" id="btn-galaxies" data-type="galaxies">Galaxies</button>
-                    <button class="preset-btn" id="btn-bw" data-type="bw-grid">B&W Grid</button>
-                    <button class="preset-btn" id="btn-col" data-type="color-grid">Color Grid</button>
+                <!-- Replaced grid-options with a vertical flex container holding two rows -->
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+                    <div style="display: flex; gap: 4px;">
+                        <button class="preset-btn active" id="btn-galaxies" data-type="galaxies" style="flex:1">Galaxies</button>
+                        <button class="preset-btn" id="btn-bw" data-type="bw-grid" style="flex:1">B&W Line Grid</button>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="preset-btn" id="btn-col" data-type="color-grid" style="flex:1">Color Line Grid</button>
+                        <button class="preset-btn" id="btn-dotted" data-type="dotted-grid" style="flex:1">Color Dotted Grid</button>
+                    </div>
                 </div>
 
                 <div id="layer-list" class="layer-list"></div>
@@ -402,7 +410,7 @@
             </div>
 
             <div class="control-group">
-                <label>
+                <label id="mass-label">
                     Cluster Mass
                     <span id="mass-val" class="value-display">100%</span>
                 </label>
@@ -410,7 +418,7 @@
             </div>
 
             <div class="control-group">
-                <label>
+                <label id="spread-label">
                     Cluster Spread
                     <span id="spread-val" class="value-display">1.00x</span>
                 </label>
@@ -427,7 +435,7 @@
 
             <div class="control-group">
                 <label>
-                    Galaxy Density
+                    <span id="density-label-text">Galaxy Density</span>
                     <span id="density-val" class="value-display">100%</span>
                 </label>
                 <input type="range" id="density-slider" min="0" max="200" value="100">
@@ -442,7 +450,7 @@
             </div>
 
             <div class="control-group">
-                <label>
+                <label id="core-label">
                     Show Dark Matter Halo
                     <input type="checkbox" id="core-check" checked>
                 </label>
@@ -760,6 +768,38 @@
             return new THREE.CanvasTexture(canvas);
         }
 
+        // Generates a grid of white dots on a black background.
+        // Density determines the spacing between the dots.
+        function createDottedGridTexture(density) {
+            const size = 2048;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, size, size);
+
+            // Higher density means smaller spacing
+            // Base spacing at density 1.0 is 64 pixels
+            const safeDensity = Math.max(density, 0.1);
+            const spacing = 64 / safeDensity;
+
+            for(let x=0; x<=size; x+=spacing) {
+                // Rainbow from left to right (Hue based on X coordinate)
+                const hue = (x / size) * 360;
+                ctx.fillStyle = `hsl(${hue}, 100%, 70%)`;
+
+                for(let y=0; y<=size; y+=spacing) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
         // Generates the "Lens" object itself - the cluster of galaxies in the foreground
         // that acts as the gravitational lens.
         function createClusterTexture(density) {
@@ -1001,6 +1041,55 @@
                     return val / x;
                 }
 
+                // Calculates deflection for the Void model based on the density profile described.
+                // r: distance from center
+                // rv: void radius
+                // d_in: inner density contrast (rho_in - 1)
+                float void_deflection(float r, float rv, float d_in) {
+                    float x = r / rv;
+                    float d_wall = 0.1;
+                    float mass_val = 0.0;
+
+                    if (x < 1.0) {
+                        // Region 1: Inside the void
+                        // Integrated profile: parabola from d_in to d_wall
+                        mass_val = d_in + 0.5 * (d_wall - d_in) * x * x;
+                    } else if (x < 1.1) {
+                        // Region 2: The ridge
+                        // Mass at r=1
+                        float m1 = d_in + 0.5 * (d_wall - d_in);
+                        // Integrated ridge mass
+                        float term = (10.0 * d_wall) * (0.55 * (x*x - 1.0) - (1.0/3.0) * (x*x*x - 1.0));
+                        mass_val = (m1 * 1.0 / x) + (term / x); // Divide by x effectively, since mass profile is proportional
+                        // We actually calculate mean density < x, so:
+                        // True M(<x) / x^2 is what we computed above?
+                        // Let's stick to proportional deflection force ~ Mass(<r) / r
+
+                        // Re-evaluating integral for M(<r):
+                        // M(<r) ~ Integral(delta(u) * u)
+                        // Inside: Integral = d_in*u + (d_wall-d_in)*u^3. Integ -> d_in*u^2/2 + (..)*u^4/4
+                        // Mean delta = M / (u^2/2).
+                        // Deflection ~ Mean delta * r.
+                        // Let's use the explicit integral forms directly for force F ~ M(<r)/r
+
+                        float M_inner = (d_in * 0.5) + (d_wall - d_in) * 0.25; // Mass at x=1 scaled
+                        float u = x;
+                        float integral_ridge = 10.0 * d_wall * ( (1.1 * 0.5 * (u*u - 1.0)) - (1.0/3.0 * (u*u*u - 1.0)) );
+                        mass_val = (M_inner + integral_ridge) / u;
+                        return mass_val * 2.0; // Scaling factor
+                    } else {
+                        // Region 3: Outside
+                        float M_inner = (d_in * 0.5) + (d_wall - d_in) * 0.25;
+                        float u = 1.1;
+                        float integral_ridge = 10.0 * d_wall * ( (1.1 * 0.5 * (u*u - 1.0)) - (1.0/3.0 * (u*u*u - 1.0)) );
+                        float M_total = M_inner + integral_ridge;
+                        return (M_total / x) * 2.0;
+                    }
+
+                    // Inside case simplified return
+                    return (d_in * 0.5 * x + (d_wall - d_in) * 0.25 * x * x * x) * 2.0 / x;
+                }
+
                 vec3 palette(float t) {
                     vec3 a = vec3(0.5, 0.5, 0.5);
                     vec3 b = vec3(0.5, 0.5, 0.5);
@@ -1053,13 +1142,23 @@
                             // Point Mass (1/r)
                             float lensStrength = baseStrength * depth;
                             deflection = normalize(distVec) * lensStrength / (r + 0.005);
-                        } else {
+                        } else if (u_model < 1.5) {
                             // NFW Halo
                             float nfwStrength = baseStrength * depth * 6.0;
                             float rs = max(u_spread * 0.24, 0.01);
                             float x = r / rs;
                             float alpha = nfw_enclosed(x);
                             deflection = normalize(distVec) * nfwStrength * alpha;
+                        } else {
+                            // Void Model
+                            float rv = max(u_spread * 0.24, 0.01);
+                            // u_mass is passed as raw slider value scaled 0-2 (0-200%).
+                            // We interpret u_mass as the inner density ratio here.
+                            float d_in = u_mass - 1.0;
+                            float alpha = void_deflection(r, rv, d_in);
+                            // Visual scaling to match user request for "slightly stronger" effect
+                            float voidStrength = 0.15 * depth;
+                            deflection = normalize(distVec) * voidStrength * alpha;
                         }
 
                         // Apply Parallax and Lensing Deflection
@@ -1088,21 +1187,52 @@
 
                     // Render the Dark Matter Halo Glow (if enabled)
                     if (u_show_core > 0.5) {
-                        float haloSize = (u_model > 0.5) ? max(u_spread * 0.2, 0.05) : u_mass * 0.1;
-                        float halo = smoothstep(haloSize, 0.0, r);
-                        vec3 haloColor = vec3(0.1, 0.12, 0.2) + vec3(0.4, 0.35, 0.3) * halo;
-                        finalColor += halo * haloColor * 0.3;
+                        if (u_model < 1.5) {
+                            // Standard Cluster Halo
+                            float haloSize = (u_model > 0.5) ? max(u_spread * 0.2, 0.05) : u_mass * 0.1;
+                            float halo = smoothstep(haloSize, 0.0, r);
+                            vec3 haloColor = vec3(0.1, 0.12, 0.2) + vec3(0.4, 0.35, 0.3) * halo;
+                            finalColor += halo * haloColor * 0.3;
+                        } else {
+                            // Void Boundary & Center Markers
+                            float rv = max(u_spread * 0.24, 0.01);
+
+                            // 1. Dotted Outline at Boundary (rv)
+                            float distFromBound = abs(r - rv);
+                            float outline = smoothstep(0.003, 0.0, distFromBound);
+                            float angle = atan(distVec.y, distVec.x);
+                            float dashes = step(0.0, sin(angle * 40.0));
+                            vec3 outlineColor = vec3(0.7); // Bright Grey
+                            finalColor = mix(finalColor, outlineColor, outline * dashes * 0.8);
+
+                            // 2. X Cross at Center
+                            // Rotate coordinates by 45 degrees
+                            float s = 0.7071;
+                            vec2 local = distVec;
+                            vec2 rot = vec2(local.x * s - local.y * s, local.x * s + local.y * s);
+                            float thickness = 0.0015;
+                            float size = 0.0075;
+                            float cross = 0.0;
+
+                            if (abs(rot.x) < thickness && abs(rot.y) < size) cross = 1.0;
+                            if (abs(rot.y) < thickness && abs(rot.x) < size) cross = 1.0;
+
+                            finalColor = mix(finalColor, outlineColor, cross);
+                        }
                     }
 
                     // Render the Foreground Cluster (The Lens Object)
-                    vec2 memberUvCenter = uv - u_mouse;
-                    memberUvCenter.x *= aspect;
-                    vec2 memberUv = memberUvCenter / (u_spread * 0.24) + 0.5;
+                    // Only visible if NOT in Void mode
+                    if (u_model < 1.5) {
+                        vec2 memberUvCenter = uv - u_mouse;
+                        memberUvCenter.x *= aspect;
+                        vec2 memberUv = memberUvCenter / (u_spread * 0.24) + 0.5;
 
-                    if(memberUv.x > 0.0 && memberUv.x < 1.0 && memberUv.y > 0.0 && memberUv.y < 1.0) {
-                        vec4 clusterSample = texture2D(u_cluster, memberUv);
-                        vec3 clusterRgb = clusterSample.rgb * u_brightness;
-                        finalColor = mix(finalColor, clusterRgb, clusterSample.a);
+                        if(memberUv.x > 0.0 && memberUv.x < 1.0 && memberUv.y > 0.0 && memberUv.y < 1.0) {
+                            vec4 clusterSample = texture2D(u_cluster, memberUv);
+                            vec3 clusterRgb = clusterSample.rgb * u_brightness;
+                            finalColor = mix(finalColor, clusterRgb, clusterSample.a);
+                        }
                     }
 
                     // Render very close foreground stars (No lensing applied to them)
@@ -1231,6 +1361,11 @@
         const densitySlider = document.getElementById('density-slider');
         const coreCheck = document.getElementById('core-check');
 
+        const massLabel = document.getElementById('mass-label');
+        const spreadLabel = document.getElementById('spread-label');
+        const coreLabel = document.getElementById('core-label');
+        const btnVoid = document.getElementById('btn-model-void');
+
         massSlider.addEventListener('input', (e) => {
             config.mass = e.target.value / 100;
             document.getElementById('mass-val').innerText = e.target.value + '%';
@@ -1270,6 +1405,11 @@
                 newBg.wrapS = THREE.RepeatWrapping;
                 newBg.wrapT = THREE.RepeatWrapping;
                 material.uniforms.u_bg.value = newBg;
+            } else if (currentMode === 'dotted-grid') {
+                const newBg = createDottedGridTexture(config.density);
+                newBg.wrapS = THREE.RepeatWrapping;
+                newBg.wrapT = THREE.RepeatWrapping;
+                material.uniforms.u_bg.value = newBg;
             }
         });
 
@@ -1284,8 +1424,41 @@
         function setModel(modelIndex) {
             config.model = modelIndex;
             modelBtns.forEach(b => b.classList.remove('active'));
-            if(modelIndex === 0) btnPoint.classList.add('active');
-            else btnNFW.classList.add('active');
+
+            if (modelIndex === 0) btnPoint.classList.add('active');
+            else if (modelIndex === 1) btnNFW.classList.add('active');
+            else if (modelIndex === 2) btnVoid.classList.add('active');
+
+            // Update UI Labels and Defaults based on Model
+            if (modelIndex === 2) { // Voids
+                massLabel.firstChild.textContent = "Void Inner Density";
+                spreadLabel.firstChild.textContent = "Void Radius";
+                coreLabel.childNodes[0].textContent = "Show Void Boundary & Center ";
+
+                // Set Defaults for Voids
+                config.mass = 0.40;
+                massSlider.value = 40;
+                document.getElementById('mass-val').innerText = "40%";
+
+                config.spread = 1.0;
+                spreadSlider.value = 100;
+                document.getElementById('spread-val').innerText = "1.00x";
+
+                coreCheck.checked = true;
+                config.showCore = 1.0;
+            } else {
+                massLabel.firstChild.textContent = "Cluster Mass";
+                spreadLabel.firstChild.textContent = "Cluster Spread";
+                coreLabel.childNodes[0].textContent = "Show Dark Matter Halo ";
+
+                // Restore defaults if moving away (optional, or keep values)
+                // Assuming restore to standard defaults if we just switched
+                if (massSlider.value == 40 && spreadSlider.value == 100) {
+                     config.mass = 1.0;
+                     massSlider.value = 100;
+                     document.getElementById('mass-val').innerText = "100%";
+                }
+            }
         }
 
         modelBtns.forEach(btn => {
@@ -1298,6 +1471,7 @@
         const layerList = document.getElementById('layer-list');
         const bgUploadInput = document.getElementById('bg-upload');
         const uploadLabel = document.getElementById('upload-label');
+        const densityLabelText = document.getElementById('density-label-text');
 
         function updateTexture(type) {
             let newTex;
@@ -1315,6 +1489,8 @@
             } else if (type === 'color-grid') {
                 newTex = createColorGridTexture();
                 material.uniforms.u_grid_mode.value = 1.0;
+            } else if (type === 'dotted-grid') {
+                newTex = createDottedGridTexture(config.density);
             }
 
             if (newTex) {
@@ -1327,6 +1503,7 @@
         const btnGalaxies = document.getElementById('btn-galaxies');
         const btnBW = document.getElementById('btn-bw');
         const btnCol = document.getElementById('btn-col');
+        const btnDotted = document.getElementById('btn-dotted');
 
         function setBgMode(mode) {
             currentMode = mode;
@@ -1334,13 +1511,32 @@
             if(mode === 'galaxies') btnGalaxies.classList.add('active');
             else if(mode === 'bw-grid') btnBW.classList.add('active');
             else if(mode === 'color-grid') btnCol.classList.add('active');
+            else if(mode === 'dotted-grid') btnDotted.classList.add('active');
 
             updateTexture(mode);
 
             if (mode === 'galaxies') {
                 densitySlider.disabled = false;
+                if(densityLabelText) densityLabelText.innerText = "Galaxy Density";
+
+                // Reset to default 3 layers for Galaxies
+                config.layers = 3;
+                layersSlider.value = 3;
+                document.getElementById('layers-val').innerText = '3';
+
             } else {
-                densitySlider.disabled = true;
+                // For all grids, default to 1 layer
+                config.layers = 1;
+                layersSlider.value = 1;
+                document.getElementById('layers-val').innerText = '1';
+
+                if (mode === 'dotted-grid') {
+                    densitySlider.disabled = false;
+                    if(densityLabelText) densityLabelText.innerText = "Grid Point Density";
+                } else {
+                    densitySlider.disabled = true;
+                    if(densityLabelText) densityLabelText.innerText = "Galaxy Density";
+                }
             }
         }
 
@@ -1374,7 +1570,7 @@
             if (manualLayers.length > 0) {
                 densitySlider.disabled = true;
             } else {
-                if (currentMode === 'galaxies') {
+                if (currentMode === 'galaxies' || currentMode === 'dotted-grid') {
                     densitySlider.disabled = false;
                 }
             }
@@ -1492,6 +1688,11 @@
                 newBg.wrapS = THREE.RepeatWrapping;
                 newBg.wrapT = THREE.RepeatWrapping;
                 material.uniforms.u_bg.value = newBg;
+            } else if (currentMode === 'dotted-grid') {
+                const newBg = createDottedGridTexture(config.density);
+                newBg.wrapS = THREE.RepeatWrapping;
+                newBg.wrapT = THREE.RepeatWrapping;
+                material.uniforms.u_bg.value = newBg;
             }
         });
 
@@ -1540,4 +1741,3 @@
 </body>
 
 </html>
-
