@@ -84,6 +84,7 @@ Modeled on the density distribution of dark matter halos. It provides a "softer"
 
 ## Credits
 * **Concept & Visualization:** Nico Schuster and Andres Salcedo
+* **Code Generation:** Google Gemini 3 Pro
 * **Library:** Built with [Three.js](https://threejs.org/)
 * **Test Image:** NASA/ESA (Hubble Ultra-Deep Field)
 
