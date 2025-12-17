@@ -89,9 +89,9 @@ Simulates a cosmic void—a large under-dense region of space—bounded by a den
 
 The density profile $\delta(x)$ is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is controlled by the Spread slider):
 
-Void Interior ($r < r_v$): A parabolic curve interpolating between the central density $\delta_{min}$ and the wall density.$$\delta(x) \propto \delta_{min} + (\delta_{wall} - \delta_{min}) x^2$$
+Void Interior ($r < r_v$): A parabolic curve interpolating between the central density $\delta_{min}$ and the wall density. $\delta(x) \propto \delta_{min} + (\delta_{wall} - \delta_{min}) x^2$
 
-Void Wall ($r_v \le r < 1.1 r_v$): A sharp density spike at the boundary that linearly decreases to zero over a thin shell.$$\delta(x) \propto 10 \cdot \delta_{wall} \cdot (1.1 - x)$$
+Void Wall ($r_v \le r < 1.1 r_v$): A sharp density spike at the boundary that linearly decreases to zero over a thin shell. $\delta(x) \propto 10 \cdot \delta_{wall} \cdot (1.1 - x)$
 
 Exterior ($r \ge 1.1 r_v$): Zero density.
 
