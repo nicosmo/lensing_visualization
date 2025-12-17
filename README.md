@@ -64,7 +64,7 @@ This repository includes a high-resolution astronomical image for testing:
 
 ## The Science
 
-The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens using the **Lens Equation** $\vec{\beta} = \vec{\theta} - \vec{\alpha}(\vec{\theta})$.
+The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens using the Lens Equation $\vec{\beta} = \vec{\theta} - \vec{\alpha}(\vec{\theta})$.
 
 ### Point Mass Model
 Assumes all mass is concentrated at a single point. Deflection decreases linearly with distance ($1/r$). This creates a sharp "Einstein Ring" but theoretically infinite deflection at the center.
