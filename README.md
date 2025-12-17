@@ -2,6 +2,7 @@
 
 
 [**🔴 Live Demo**](https://nicosmo.github.io/lensing_visualization/)
+
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
 An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
