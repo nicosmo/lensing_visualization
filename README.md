@@ -39,18 +39,6 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 * A modern web browser (Chrome, Firefox, Safari, Edge) with WebGL enabled.
 * An internet connection (to load the Three.js library from cdnjs).
 
-### Installation
-
-1.  Clone the repository:
-    ```bash
-    git clone [https://github.com/yourusername/lensing_visualization.git](https://github.com/yourusername/lensing_visualization.git)
-    cd lensing_visualization
-    ```
-
-2.  **Run the simulation:**
-    Simply open `index.html` in your web browser.
-
----
 
 ## Usage
 
