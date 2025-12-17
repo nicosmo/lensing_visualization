@@ -5,7 +5,7 @@
 
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
-An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
+An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster or void (the "lens"), allowing users to toggle between different physics models and background sources.
 
 ![Lensing Example Plot](lensing_example.png)
 
@@ -16,15 +16,16 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Physics Models:**
     * **Point Mass:** Simulates a simple, singular dense mass (potential $\propto 1/r$).
     * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing the realistic mass distribution of galaxy clusters.
+    * ** Voids:** Simulates a cosmic void with an approximated matter profile, representing a simplified HSW profile.
 * **Multi-Plane Lensing:** Simulates depth by treating the background as multiple distinct layers, creating parallax effects and varying distortion based on distance.
 
 ### Rendering & Procedural Generation
-* **Procedural Universe:** Background galaxies and the foreground cluster are generated procedurally using seeded random numbers. Every "Reshuffle" creates a unique, consistent star field.
-* **Parallax Depth:** Foreground stars, the cluster lens, and background layers move at different rates to simulate 3D space.
+* **Procedural Universe:** Background galaxies and the foreground cluster/void are generated procedurally using seeded random numbers. Every "Reshuffle" creates a unique, consistent star field.
+* **Parallax Depth:** Foreground stars, the cluster/void lens, and background layers move at different rates to simulate 3D space.
 * **Custom Sprites:** Uses HTML5 Canvas to pre-render galaxy sprites (spirals and ellipticals) for high-performance rendering.
 
 ### Interactivity
-* **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time.
+* **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time, as well as Void Inner Density and Void Size
 * **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
 
@@ -54,7 +55,7 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 ## Usage
 
 ### Controls
-* **Move Lens:** Move your mouse (or drag on touch devices) to position the galaxy cluster.
+* **Move Lens:** Move your mouse (or drag on touch devices) to position the galaxy cluster / cosmic void.
 * **Lock Position:** Click anywhere on the canvas to **LOCK** the lens position. Click again to unlock.
 * **UI Panel:** Use the top-left panel to toggle settings. (Click `-` to minimize).
 
@@ -68,7 +69,7 @@ You can upload your own images to test the lensing effect:
 ### Included Test Data
 This repository includes a high-resolution astronomical image for testing:
 * **File:** `Hubble_ultra_deep_field_high_rez.jpg`
-* **Description:** A section of the Hubble Ultra-Deep Field, ideal for visualizing how a cluster distorts a realistic background field.
+* **Description:** A section of the Hubble Ultra-Deep Field, ideal for visualizing how a cluster/void distorts a realistic background field.
 * **Source:** Wikipedia (Accessed Dec 17, 2025).
 
 ---
@@ -82,6 +83,13 @@ Assumes all mass is concentrated at a single point. Deflection decreases linearl
 
 ### NFW (Navarro-Frenk-White) Profile
 Modeled on the density distribution of dark matter halos as described in [Navarro, Frenk & White (1997)](https://ui.adsabs.harvard.edu/abs/1997ApJ...490..493N/abstract). It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
+
+### Void Model
+Simulates a cosmic void—a large under-dense region of space—bounded by a dense "wall" or ridge. Unlike the Point Mass or NFW profiles, which act purely as converging lenses, this model can simulate under-dense regions (negative convergence).
+The density profile $\delta(x)$ is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is controlled by the Spread slider):
+Void Interior ($r < r_v$): A parabolic curve interpolating between the central density $\delta_{min}$ and the wall density.$$\delta(x) \propto \delta_{min} + (\delta_{wall} - \delta_{min}) x^2$$
+Void Wall ($r_v \le r < 1.1 r_v$): A sharp density spike at the boundary that linearly decreases to zero over a thin shell.$$\delta(x) \propto 10 \cdot \delta_{wall} \cdot (1.1 - x)$$
+Exterior ($r \ge 1.1 r_v$): Zero density.
 
 ---
 
