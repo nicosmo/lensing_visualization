@@ -1,5 +1,7 @@
 # Visualizing Gravitational Lensing
 
+
+[**🔴 Live Demo**](https://nicosmo.github.io/lensing_visualization/)
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
 An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
@@ -78,7 +80,7 @@ The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as t
 Assumes all mass is concentrated at a single point. Deflection decreases linearly with distance ($1/r$). This creates a sharp "Einstein Ring" but theoretically infinite deflection at the center.
 
 ### NFW (Navarro-Frenk-White) Profile
-Modeled on the density distribution of dark matter halos. It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
+Modeled on the density distribution of dark matter halos as described in [Navarro, Frenk & White (1997)](https://ui.adsabs.harvard.edu/abs/1997ApJ...490..493N/abstract). It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
 
 ---
 
