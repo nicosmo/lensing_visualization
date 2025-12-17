@@ -64,7 +64,9 @@ This repository includes a high-resolution astronomical image for testing:
 
 ## The Science
 
-The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens using the Lens Equation $\vec{\beta} = \vec{\theta} - \vec{\alpha}(\vec{\theta})$
+The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens using the Lens Equation:
+
+$\vec{\beta} = \vec{\theta} - \vec{\alpha}(\vec{\theta})$
 
 
 ### Point Mass Model
