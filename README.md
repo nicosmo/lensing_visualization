@@ -1,18 +1,18 @@
-# Gravitational Lensing Visualization
+# Visualizing Gravitational Lensing
 
-**Interactive tool to visualize a massive galaxy cluster bending light from background layers.**
+**Concept & Visualization by Nico Schuster and Andres Salcedo**
 
-This project is a browser-based WebGL visualisation that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
+An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
 
 ![Lensing Example Plot](lensing_example.png)
 
-## Features:
+## Features
 
-### Physics & Visualilsation
-* **Real-time Raytracing:** Uses custom GLSL fragment shaders to calculate light deflection pixel-by-pixel.
+### Physics & Visualization
+* **Real-time Ray Shooting:** Uses custom GLSL fragment shaders to calculate light deflection pixel-by-pixel using **Inverse Ray Tracing** (Thin Lens Approximation).
 * **Physics Models:**
-    * **Point Mass:** Simulates a simple, singular dense mass ($1/r$ potential).
-    * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing realistic mass distribution in galaxy clusters.
+    * **Point Mass:** Simulates a simple, singular dense mass (potential $\propto 1/r$).
+    * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing the realistic mass distribution of galaxy clusters.
 * **Multi-Plane Lensing:** Simulates depth by treating the background as multiple distinct layers, creating parallax effects and varying distortion based on distance.
 
 ### Rendering & Procedural Generation
@@ -25,6 +25,8 @@ This project is a browser-based WebGL visualisation that renders real-time gravi
 * **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
 
+---
+
 ## Getting Started
 
 Since this project relies on native browser technologies (HTML5, Three.js via CDN), there is no build process required.
@@ -34,13 +36,17 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 * An internet connection (to load the Three.js library from cdnjs).
 
 ### Installation
-1.  **Clone the repository:**
+
+1.  Clone the repository:
     ```bash
     git clone [https://github.com/yourusername/lensing_visualization.git](https://github.com/yourusername/lensing_visualization.git)
     cd lensing_visualization
     ```
+
 2.  **Run the simulation:**
     Simply open `index.html` in your web browser.
+
+---
 
 ## Usage
 
@@ -54,29 +60,34 @@ You can upload your own images to test the lensing effect:
 1.  Open the UI Panel.
 2.  Click **"Add Own Background Image"**.
 3.  Select an image from your computer.
-4.  *Tip:* You can upload multiple images to create multi-layer depth effects.
+    * *Tip: You can upload multiple images to create multi-layer depth effects.*
 
 ### Included Test Data
 This repository includes a high-resolution astronomical image for testing:
 * **File:** `Hubble_ultra_deep_field_high_rez.jpg`
 * **Description:** A section of the Hubble Ultra-Deep Field, ideal for visualizing how a cluster distorts a realistic background field.
-* **Source:** [Wikipedia](https://en.wikipedia.org/wiki/Hubble_Ultra-Deep_Field) (Accessed Dec 17, 2025).
+* **Source:** Wikipedia (Accessed Dec 17, 2025).
+
+---
 
 ## The Science
 
-The simulation calculates the deflection angle $\hat{\alpha}$ of light rays as they pass near the lens.
+The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens using the **Lens Equation** ($\vec{\beta} = \vec{\theta} - \vec{\alpha}(\vec{\theta})$).
 
-1.  **Point Mass Model:**
-    Assumes all mass is concentrated at a single point. Deflection decreases linearly with distance ($1/r$).
-2.  **NFW (Navarro-Frenk-White) Profile:**
-    Modeled on the density distribution of dark matter halos. It provides a "softer" core than a point mass, meaning the lensing effect doesn't approach infinity at the center, creating a more realistic distortion typical of galaxy clusters.
+### Point Mass Model
+Assumes all mass is concentrated at a single point. Deflection decreases linearly with distance ($1/r$). This creates a sharp "Einstein Ring" but theoretically infinite deflection at the center.
+
+### NFW (Navarro-Frenk-White) Profile
+Modeled on the density distribution of dark matter halos. It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
+
+---
 
 ## Credits
-
-* **Concept & Visualization:** Nico Schuster and Andres Salcedo.
-* **Library:** Built with [Three.js](https://threejs.org/).
-* **Test Image:** NASA/ESA (Hubble Ultra-Deep Field).
+* **Concept & Visualization:** Nico Schuster and Andres Salcedo
+* **Library:** Built with [Three.js](https://threejs.org/)
+* **Test Image:** NASA/ESA (Hubble Ultra-Deep Field)
 
 ## License
 
-This project is open source. [Include your license here, e.g., MIT].
+This project is licensed under the **Creative Commons Zero v1.0 Universal (CC0)**.
+You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. See the [LICENSE](LICENSE) file for details.
