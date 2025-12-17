@@ -4,8 +4,7 @@
 
 This project is a browser-based WebGL visualisation that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster (the "lens"), allowing users to toggle between different physics models and background sources.
 
-![Project Screenshot](https://via.placeholder.com/800x450?text=Screenshot+Placeholder+Replace+Me)
-*(Replace the link above with a real screenshot of your application)*
+![Lensing Example Plot](lensing_example.png)
 
 ## Features:
 
