@@ -75,15 +75,26 @@ Assumes all mass is concentrated at a single point. Deflection decreases linearl
 Modeled on the density distribution of dark matter halos as described in [Navarro, Frenk & White (1997)](https://ui.adsabs.harvard.edu/abs/1997ApJ...490..493N/abstract). It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
 
 ### Void Model
-Simulates a cosmic void—a large under-dense region of space—bounded by a dense "wall" or ridge. Unlike the Point Mass or NFW profiles, which act purely as converging lenses, this model can simulate under-dense regions (negative convergence).
+Simulates a cosmic void—a large under-dense region of space—bounded by a dense "wall" or ridge. Unlike the Point Mass or NFW profiles, which act purely as converging lenses, this model can simulate under-dense regions (negative convergence/repulsive lensing).
 
-The density profile $\delta(x) = \rho(x) / \bar{\rho} - 1$ (density contrast) is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is controlled by the Spread slider):
+The density profile $\delta(x) = \rho(x) / \bar{\rho} - 1$ (density contrast) is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is the void radius and controlled by a slider). The profile features a smooth "bucket" shape with a flat inner core and a thin outer ridge:
 
-Void Interior ($r < r_v$): A parabolic curve interpolating between the central density $\delta_{min}$ and the wall density $\delta_{wall} = 0.1$. $\delta(x) \propto \delta_{min} + (\delta_{wall} - \delta_{min}) x^2$
+Void Core ($x < 0.1$):
+A central region of constant under-density: $\delta(x) = \delta_{min}$ (adjustable by slider)
 
-Void Wall ($r_v \le r < 1.1 r_v$): A sharp density spike at the boundary that linearly decreases to zero over a thin shell. $\delta(x) \propto 10 \cdot \delta_{wall} \cdot (1.1 - x)$
+Void Interior ($0.1 \le x < 1.0$):
+A smooth quadratic transition that rises from the core density to the wall density.
+$\delta(x) = \delta_{min} + (\delta_{wall} - \delta_{min}) \left( \frac{x - 0.1}{0.9} \right)^2$ ; 
+$\delta_{wall}$ is fixed to 0.05
 
-Exterior ($r \ge 1.1 r_v$): Zero density contrast.
+Void Wall ($1.0 \le x < 1.05$):
+A thin, dense shell where the density peaks at $\delta_{wall} = 0.05$ and drops linearly to zero.
+$$\delta(x) = 1.05 - x$$
+(Matches $\delta=0.05$ at $x=1$ and $\delta=0$ at $x=1.05$)
+
+Exterior ($x \ge 1.05$):
+Zero density contrast (mean cosmological density).
+
 
 ---
 
