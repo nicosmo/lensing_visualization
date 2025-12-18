@@ -7,6 +7,8 @@
 
 An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster or void (the "lens"), allowing users to toggle between different physics models and background sources.
 
+**Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW, Voids), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance.
+
 ![Lensing Example Plot](lensing_example.png)
 
 ## Features
@@ -16,7 +18,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Physics Models:**
     * **Point Mass:** Simulates a simple, singular dense mass (potential $\propto 1/r$).
     * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing the realistic mass distribution of galaxy clusters.
-    * ** Voids:** Simulates a cosmic void with an approximated matter profile, representing a simplified HSW profile.
+    * **Voids:** Simulates a cosmic void with an approximated matter profile, representing a simplified HSW profile.
 * **Multi-Plane Lensing:** Simulates depth by treating the background as multiple distinct layers, creating parallax effects and varying distortion based on distance.
 
 ### Rendering & Procedural Generation
@@ -28,6 +30,8 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time, as well as Void Inner Density and Void Size
 * **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
+* **Snapshot Export:** Save high-resolution PNG snapshots of the current lensing state for presentations or wallpapers.
+* **Reshuffling:** Instantly generate a new random seed to create a completely unique background galaxy field.
 
 ---
 
@@ -39,6 +43,12 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 * A modern web browser (Chrome, Firefox, Safari, Edge) with WebGL enabled.
 * An internet connection (to load the Three.js library from cdnjs).
 
+### Running Locally
+For the best experience (and to avoid browser security restrictions with local textures), it is recommended to use a local server rather than double-clicking the HTML file:
+1. Open your terminal in the project folder.
+2. Run `python3 -m http.server`
+3. Open `http://localhost:8000` in your browser.
+
 
 ## Usage
 
@@ -46,6 +56,13 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 * **Move Lens:** Move your mouse (or drag on touch devices) to position the galaxy cluster / cosmic void.
 * **Lock Position:** Click anywhere on the canvas to **LOCK** the lens position. Click again to unlock.
 * **UI Panel:** Use the top-left panel to toggle settings. (Click `-` to minimize).
+* **Save Snapshot:** Downloads the current view as a .png with a timestamp and attribution
+
+## Visual Modes
+The tool offers different background modes to help visualize the distortion field:
+* **Galaxies:** A procedurally generated deep field for realistic visualization.
+* **Grids (B&W / Color):** High-contrast grid lines that make the specific warping geometry (shear and convergence) immediately visible.
+* **Dotted Grid:** Useful for seeing density changes and magnification effects clearly.
 
 ### Using Custom Images
 You can upload your own images to test the lensing effect:
