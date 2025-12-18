@@ -97,7 +97,7 @@ Simulates a cosmic void—a large under-dense region of space—bounded by a den
 The density profile $\delta(x) = \rho(x) / \bar{\rho} - 1$ (density contrast) is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is the void radius and controlled by a slider). The profile features a smooth "bucket" shape with a flat inner core and a thin outer ridge:
 
 Void Core ($x < 0.1$):
-A central region of constant under-density: $\delta(x) = \delta_{min}$ (adjustable by slider)
+A central region of constant under-density: $\delta(x) = \delta_{min}$ (adjustable by slider with values in % of mean density)
 
 Void Interior ($0.1 \le x < 1.0$):
 A smooth quadratic transition that rises from the core density to the wall density.
