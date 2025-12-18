@@ -783,7 +783,9 @@
             // Higher density means smaller spacing
             // Base spacing at density 1.0 is 64 pixels
             const safeDensity = Math.max(density, 0.1);
-            const spacing = 64 / safeDensity;
+            const idealSpacing = 64 / safeDensity;
+            const steps = Math.round(size / idealSpacing);
+            const spacing = size / steps; // Ensures perfect wrapping
 
             for(let x=0; x<=size; x+=spacing) {
                 // Rainbow from left to right (Hue based on X coordinate)
@@ -1824,4 +1826,5 @@
 </body>
 
 </html>
+
 
