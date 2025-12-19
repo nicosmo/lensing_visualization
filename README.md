@@ -9,8 +9,6 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 **Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW, Voids), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance.
 
-![Lensing Example Plot](lensing_example.png)
-
 ## Features
 
 ### Physics & Visualization
