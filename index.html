@@ -1358,8 +1358,8 @@
                     }
                 }
             }
-            window.addEventListener('touchstart', handleTouch, { passive: false });
-            window.addEventListener('touchmove', handleTouch, { passive: false });
+            renderer.domElement.addEventListener('touchstart', handleTouch, { passive: false });
+            renderer.domElement.addEventListener('touchmove', handleTouch, { passive: false });
 
             renderer.domElement.addEventListener('click', toggleLock, false);
 
