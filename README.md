@@ -121,7 +121,7 @@ Zero density contrast (mean cosmological density).
 * **Library:** Built with [Three.js](https://threejs.org/)
 * **Test Image:** NASA/ESA (Hubble Ultra-Deep Field)
 
-The authors of this code thank Simon Bouchard, Wei Liu, Lucas Sauniere, and Georgios Valogiannis for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project.
+The authors of this code thank Simon Bouchard, Wei Liu, Alice Pisani, Lucas Sauniere, and Georgios Valogiannis for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project.
 
 ## License
 
