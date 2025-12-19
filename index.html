@@ -1348,8 +1348,25 @@
             window.addEventListener('resize', onWindowResize, false);
             window.addEventListener('mousemove', onMouseMove, false);
 
+            // Variables to track touch movement for "tap" detection
+            let touchStartTime = 0;
+            let touchStartPos = new THREE.Vector2();
+
             // Unified Touch Handler
-            function handleTouch(e) {
+            function handleTouchStart(e) {
+                if(e.touches.length > 0) {
+                    e.preventDefault();
+                    touchStartTime = Date.now();
+                    touchStartPos.set(e.touches[0].clientX, e.touches[0].clientY);
+
+                    if (!isLocked) {
+                        targetMouse.x = e.touches[0].clientX / window.innerWidth;
+                        targetMouse.y = 1.0 - (e.touches[0].clientY / window.innerHeight);
+                    }
+                }
+            }
+
+            function handleTouchMove(e) {
                 if(e.touches.length > 0) {
                     e.preventDefault();
                     if (!isLocked) {
@@ -1358,9 +1375,25 @@
                     }
                 }
             }
-            renderer.domElement.addEventListener('touchstart', handleTouch, { passive: false });
-            renderer.domElement.addEventListener('touchmove', handleTouch, { passive: false });
 
+            function handleTouchEnd(e) {
+                // Calculate how long the touch lasted and how far it moved
+                const duration = Date.now() - touchStartTime;
+                const touchEndPos = new THREE.Vector2(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                const distance = touchStartPos.distanceTo(touchEndPos);
+
+                // If touch was short (< 300ms) and didn't move much (< 10px), treat it as a CLICK/TAP
+                if (duration < 300 && distance < 10) {
+                    toggleLock(e); // Trigger the lock logic
+                }
+            }
+
+            // Attach listeners specifically to the canvas
+            renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+            renderer.domElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+            // Standard mouse click for desktop
             renderer.domElement.addEventListener('click', toggleLock, false);
 
             animate();
