@@ -358,6 +358,20 @@
             text-align: center;
             width: 100%;
         }
+
+        @media (max-width: 768px) {
+            #ui-layer {
+                width: auto; left: 10px; right: 10px; top: auto; bottom: 10px;
+                max-height: 40vh;
+            }
+            .ui-header h1 { font-size: 1rem; }
+            #toggle-btn { padding: 10px 15px; font-size: 1.5rem; }
+            .preset-btn, .model-btn, .reshuffle-btn, .reset-main-btn { padding: 12px 0; font-size: 0.85rem; }
+            input[type="range"] { height: 20px; }
+            .instructions { bottom: auto; top: 20px; font-size: 0.7rem; }
+            #ui-layer.minimized .control-content { display: none; }
+            #ui-layer.minimized { height: auto; padding-bottom: 0; }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -377,7 +391,7 @@
             <p>Interactive visualization of a massive cluster or a cosmic void bending light from background layers. A qualitative representation of lensing effects.</p>
             <p id="credit-text" class="credit-text">Concept & Visualization by Nico Schuster and Andres Salcedo</p>
             <p class="credit-text" style="margin-top: -8px;">
-            <a href="https://github.com/nicosmo/lensing_visualization/" target="_blank" style="color: #4facfe; text-decoration: none;">View and more info on GitHub</a>
+            <a href="https://github.com/nicosmo/lensing_visualization/" target="_blank" style="color: #4facfe; text-decoration: none;">Code and more info on GitHub</a>
             </p>
 
             <div class="control-group">
@@ -446,6 +460,20 @@
                     <span id="bright-val" class="value-display">100%</span>
                 </label>
                 <input type="range" id="bright-slider" min="0" max="200" value="100">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    Show Foreground Galaxies
+                    <input type="checkbox" id="fg-check" checked>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    Show Cluster Member Galaxies
+                    <input type="checkbox" id="cluster-check" checked>
+                </label>
             </div>
 
             <div class="control-group">
@@ -617,10 +645,10 @@
                         ctx.arc(x, y, Math.random() * 3 + 1, 0, Math.PI * 2);
                         ctx.fill();
                     } else {
-                        const starHue = hue + (Math.random() * 20 - 10);
-                        const starLight = 90 - (rNorm * 40);
+                        const galaxyHue = hue + (Math.random() * 20 - 10);
+                        const galaxyLight = 90 - (rNorm * 40);
                         const alpha = 0.8 - (rNorm * 0.5);
-                        ctx.fillStyle = `hsla(${starHue}, ${sat}%, ${starLight}%, ${alpha})`;
+                        ctx.fillStyle = `hsla(${galaxyHue}, ${sat}%, ${galaxyLight}%, ${alpha})`;
                         ctx.beginPath();
                         ctx.arc(x, y, Math.random() * 1.5 + 0.5, 0, Math.PI * 2);
                         ctx.fill();
@@ -662,12 +690,13 @@
 
         // Generates the deep field background of galaxies.
         function createBackgroundTexture(density) {
-            const size = 2048;
+            const isMobile = window.innerWidth < 768;
+            const size = isMobile ? 1024 : 2048;
+
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
             const ctx = canvas.getContext('2d');
-
             const rng = mulberry32(masterSeed + 1);
 
             // Dark background
@@ -678,7 +707,7 @@
             for (let i = 0; i < 60; i++) {
                 const x = rng() * size;
                 const y = rng() * size;
-                const r = rng() * 300 + 100;
+                const r = rng() * (size * 0.15) + (size * 0.05);
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                 grad.addColorStop(0, `hsla(220, 40%, 15%, 0.05)`);
                 grad.addColorStop(1, "transparent");
@@ -692,18 +721,26 @@
             ctx.globalCompositeOperation = 'screen';
 
             // Draw galaxies
-            const baseCount = 733;
+            const baseCount = isMobile ? 350 : 733;
             const count = Math.floor(baseCount * density);
+            const sizeScale = size / 2048;
 
             for (let i = 0; i < count; i++) {
-                drawGalaxyClassic(ctx, size, { isForeground: false, isCluster: false, minSize: 2.0, maxSize: 10.0 }, rng);
+                drawGalaxyClassic(ctx, size, {
+                    isForeground: false,
+                    isCluster: false,
+                    minSize: 2.0 * sizeScale,
+                    maxSize: 10.0 * sizeScale
+                }, rng);
             }
             return new THREE.CanvasTexture(canvas);
         }
 
         // Generates a simple Black and White Grid for testing lensing distortions.
         function createBWGridTexture() {
-            const size = 2048;
+            const isMobile = window.innerWidth < 768;
+            const size = isMobile ? 1024 : 2048;
+
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
@@ -805,7 +842,9 @@
         // Generates the "Lens" object itself - the cluster of galaxies in the foreground
         // that acts as the gravitational lens.
         function createClusterTexture(density) {
-            const size = 1024;
+            const isMobile = window.innerWidth < 768;
+            const size = isMobile ? 512 : 1024;
+
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
@@ -815,8 +854,9 @@
 
             ctx.clearRect(0,0,size,size);
 
-            const baseCount = 25;
+            const baseCount = isMobile ? 15 : 25;
             const count = Math.floor(baseCount * density);
+            const sizeScale = size / 1024;
 
             for(let i=0; i<count; i++) {
                 // Concentrate galaxies towards the center to simulate a cluster
@@ -827,7 +867,12 @@
                 const y = size/2 + r * Math.sin(theta);
 
                 let isSpiral = rng() > 0.5;
-                let sizeConfig = { isForeground: false, isCluster: true, minSize: 30, maxSize: 90 };
+                let sizeConfig = {
+                    isForeground: false,
+                    isCluster: true,
+                    minSize: 30 * sizeScale,
+                    maxSize: 90 * sizeScale
+                };
 
                 if (isSpiral) {
                     ctx.globalCompositeOperation = 'source-over';
@@ -885,7 +930,9 @@
         // Generates foreground noise/objects that are NOT part of the lens or the background,
         // used to add depth parallax.
         function createForegroundTexture(density) {
-            const size = 2048;
+            const isMobile = window.innerWidth < 768;
+            const size = isMobile ? 1024 : 2048;
+
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
@@ -897,11 +944,17 @@
 
             ctx.globalCompositeOperation = 'source-over';
 
-            const baseCount = 40;
+            const baseCount = isMobile ? 20 : 40;
             const count = Math.floor(baseCount * density);
+            const sizeScale = size / 2048;
 
             for(let i=0; i<count; i++) {
-                drawForegroundSprite(ctx, size, { isForeground: true, isCluster: false, minSize: 25, maxSize: 90 }, rng);
+                drawForegroundSprite(ctx, size, {
+                    isForeground: true,
+                    isCluster: false,
+                    minSize: 25 * sizeScale,
+                    maxSize: 90 * sizeScale
+                }, rng);
             }
             return new THREE.CanvasTexture(canvas);
         }
@@ -924,6 +977,8 @@
             density: 1.0,
             brightness: 1.0,
             showCore: 1.0,
+            showForeground: 1.0,
+            showCluster: 1.0,
             model: 0
         };
 
@@ -984,6 +1039,8 @@
                 u_layers: { value: config.layers },
                 u_brightness: { value: config.brightness },
                 u_show_core: { value: config.showCore },
+                u_show_foreground: { value: config.showForeground },
+                u_show_cluster: { value: config.showCluster },
                 u_model: { value: config.model },
                 u_grid_mode: { value: 0.0 },
                 u_use_manual: { value: 0.0 },
@@ -1021,6 +1078,8 @@
                 uniform float u_layers;
                 uniform float u_brightness;
                 uniform float u_show_core;
+                uniform float u_show_foreground;
+                uniform float u_show_cluster;
                 uniform float u_model;
                 uniform float u_grid_mode;
                 uniform float u_use_manual;
@@ -1252,7 +1311,7 @@
 
                     // Render the Foreground Cluster (The Lens Object)
                     // Only visible if NOT in Void mode
-                    if (u_model < 1.5) {
+                    if (u_model < 1.5 && u_show_cluster > 0.5) {
                         vec2 memberUvCenter = uv - u_mouse;
                         memberUvCenter.x *= aspect;
                         vec2 memberUv = memberUvCenter / (u_spread * 0.24) + 0.5;
@@ -1264,10 +1323,13 @@
                         }
                     }
 
-                    // Render very close foreground stars (No lensing applied to them)
-                    vec4 fgSample = texture2D(u_fg, uv);
-                    vec3 fgRgb = fgSample.rgb * u_brightness;
-                    finalColor = mix(finalColor, fgRgb, fgSample.a);
+                    // Render very close foreground galaxies (No lensing applied to them)
+                    if (u_show_foreground > 0.5) {
+                        vec4 fgSample = texture2D(u_fg, uv);
+                        vec3 fgRgb = fgSample.rgb * u_brightness;
+                        finalColor = mix(finalColor, fgRgb, fgSample.a);
+                    }
+                    // END REPLACEMENT
 
                     gl_FragColor = vec4(finalColor, 1.0);
                 }
@@ -1285,10 +1347,29 @@
             // Listeners
             window.addEventListener('resize', onWindowResize, false);
             window.addEventListener('mousemove', onMouseMove, false);
-            window.addEventListener('touchmove', onTouchMove, { passive: false });
+
+            // Unified Touch Handler
+            function handleTouch(e) {
+                if(e.touches.length > 0) {
+                    e.preventDefault();
+                    if (!isLocked) {
+                        targetMouse.x = e.touches[0].clientX / window.innerWidth;
+                        targetMouse.y = 1.0 - (e.touches[0].clientY / window.innerHeight);
+                    }
+                }
+            }
+            window.addEventListener('touchstart', handleTouch, { passive: false });
+            window.addEventListener('touchmove', handleTouch, { passive: false });
+
             renderer.domElement.addEventListener('click', toggleLock, false);
 
             animate();
+
+            // Check for mobile start
+            if (window.innerWidth < 768) {
+                uiLayer.classList.add('minimized');
+                toggleBtn.innerText = '+';
+            }
         }
 
         // --- Event Handlers & Helpers ---
@@ -1360,6 +1441,8 @@
 
             material.uniforms.u_brightness.value = config.brightness;
             material.uniforms.u_show_core.value = config.showCore;
+            material.uniforms.u_show_foreground.value = config.showForeground;
+            material.uniforms.u_show_cluster.value = config.showCluster;
             material.uniforms.u_model.value = config.model;
 
             renderer.render(scene, camera);
@@ -1389,6 +1472,8 @@
         const brightSlider = document.getElementById('bright-slider');
         const densitySlider = document.getElementById('density-slider');
         const coreCheck = document.getElementById('core-check');
+        const fgCheck = document.getElementById('fg-check');
+        const clusterCheck = document.getElementById('cluster-check');
 
         const massLabel = document.getElementById('mass-label');
         const spreadLabel = document.getElementById('spread-label');
@@ -1444,6 +1529,14 @@
 
         coreCheck.addEventListener('change', (e) => {
             config.showCore = e.target.checked ? 1.0 : 0.0;
+        });
+
+        fgCheck.addEventListener('change', (e) => {
+            config.showForeground = e.target.checked ? 1.0 : 0.0;
+        });
+
+        clusterCheck.addEventListener('change', (e) => {
+            config.showCluster = e.target.checked ? 1.0 : 0.0;
         });
 
         const modelBtns = document.querySelectorAll('.model-btn');
@@ -1747,12 +1840,13 @@
 
             coreCheck.checked = true;
 
+            if(typeof fgCheck !== 'undefined') { fgCheck.checked = true; config.showForeground = 1.0; }
+            if(typeof clusterCheck !== 'undefined') { clusterCheck.checked = true; config.showCluster = 1.0; }
+
             setModel(0);
             manualLayers = [];
             updateLayerUI();
             setBgMode('galaxies');
-
-            masterSeed = Math.floor(Math.random() * 100000);
 
             const newCluster = createClusterTexture(config.density);
             newCluster.wrapS = THREE.ClampToEdgeWrapping;
@@ -1826,7 +1920,5 @@
 </body>
 
 </html>
-
-
 
 
