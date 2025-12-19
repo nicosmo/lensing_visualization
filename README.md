@@ -28,7 +28,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 ### Interactivity
 * **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time, as well as Void Inner Density and Void Size
-* **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens.
+* **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens. The repository contains an example image of the Hubble Ultra Deep Field for the background.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
 * **Snapshot Export:** Save high-resolution PNG snapshots of the current lensing state for presentations or wallpapers.
 * **Reshuffling:** Instantly generate a new random seed to create a completely unique background galaxy field.
