@@ -1377,14 +1377,14 @@
             }
 
             function handleTouchEnd(e) {
-                // Calculate how long the touch lasted and how far it moved
                 const duration = Date.now() - touchStartTime;
                 const touchEndPos = new THREE.Vector2(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                 const distance = touchStartPos.distanceTo(touchEndPos);
 
-                // If touch was short (< 300ms) and didn't move much (< 10px), treat it as a CLICK/TAP
+                // If tap was short and didn't move
                 if (duration < 300 && distance < 10) {
-                    toggleLock(e); // Trigger the lock logic
+                    e.preventDefault(); // Stop the browser from firing a fake mouse 'click' later
+                    toggleLock(e);
                 }
             }
 
@@ -1445,8 +1445,25 @@
                 ind.style.display = 'none';
                 instruct.innerText = "Drag to move • Click to Lock";
                 container.style.cursor = 'crosshair';
-                targetMouse.x = e.clientX / window.innerWidth;
-                targetMouse.y = 1.0 - (e.clientY / window.innerHeight);
+
+                // Handle coordinates for both Mouse and Touch ---
+                let cx, cy;
+
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    // It is a touch event
+                    cx = e.changedTouches[0].clientX;
+                    cy = e.changedTouches[0].clientY;
+                } else if (e.clientX !== undefined) {
+                    // It is a mouse event
+                    cx = e.clientX;
+                    cy = e.clientY;
+                }
+
+                // Only update position if we found valid coordinates
+                if (cx !== undefined) {
+                    targetMouse.x = cx / window.innerWidth;
+                    targetMouse.y = 1.0 - (cy / window.innerHeight);
+                }
             }
         }
 
