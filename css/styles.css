@@ -1,0 +1,367 @@
+/* Global Styles
+   Sets up the full-screen immersive black background for space visualization.
+*/
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Inter', sans-serif;
+    color: white;
+}
+
+/* Canvas Container
+   Holds the WebGL output. Cursor is set to crosshair to indicate the lens position is interactive.
+*/
+#canvas-container {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    cursor: crosshair;
+}
+
+/* UI Overlay
+   Floating control panel on the left side.
+   Uses backdrop-filter to blur the space background behind the controls.
+*/
+#ui-layer {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(8, 15, 25, 0.9);
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(100, 200, 255, 0.15);
+    backdrop-filter: blur(8px);
+    width: 260px;
+    pointer-events: auto;
+    user-select: text;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    transition: height 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar styling for the UI panel */
+#ui-layer::-webkit-scrollbar {
+    width: 4px;
+}
+#ui-layer::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+#ui-layer::-webkit-scrollbar-thumb {
+    background: #4facfe;
+    border-radius: 2px;
+}
+
+/* Minimized state for the UI panel */
+#ui-layer.minimized {
+    height: 28px;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+#ui-layer.minimized .control-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ui-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #b3e5ff;
+    letter-spacing: 0.3px;
+}
+
+#toggle-btn {
+    background: transparent;
+    border: none;
+    color: #4facfe;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0 4px;
+    transition: transform 0.3s;
+}
+#toggle-btn:hover {
+    color: white;
+}
+
+.control-content {
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+
+p {
+    font-size: 0.75rem;
+    color: #8fb8e0;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.credit-text {
+    font-size: 0.7rem;
+    color: #8fb8e0;
+    margin-bottom: 12px;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+/* Control Groups for Sliders and Buttons */
+.control-group {
+    margin-bottom: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    color: #ccc;
+    font-weight: 500;
+}
+
+/* Custom Range Slider Styling */
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    height: 4px;
+    background: #334;
+    border-radius: 2px;
+    appearance: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #4facfe;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+input[type="range"]:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.grid-options, .model-options {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.preset-btn, .model-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #8fb8e0;
+    padding: 6px 0;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 60px;
+}
+.preset-btn:hover, .model-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+.preset-btn.active, .model-btn.active {
+    background: rgba(79, 172, 254, 0.3);
+    border-color: #4facfe;
+    color: white;
+    font-weight: bold;
+}
+
+input[type="file"] {
+    display: none;
+}
+.file-upload-btn {
+    display: block;
+    background: rgba(79, 172, 254, 0.15);
+    border: 1px dashed rgba(79, 172, 254, 0.5);
+    color: #4facfe;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.2s, color 0.2s;
+    margin-top: 8px;
+}
+.file-upload-btn:hover {
+    background: rgba(79, 172, 254, 0.3);
+    color: white;
+}
+
+.layer-list {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.layer-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.layer-name {
+    font-size: 0.7rem;
+    color: #7affb5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+}
+
+.remove-layer-btn {
+    background: none;
+    border: none;
+    color: #ff5555;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 0 0 8px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.remove-layer-btn:hover {
+    color: #ffaaaa;
+}
+
+.reset-container {
+    margin-top: 16px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.reshuffle-btn {
+    background: rgba(79, 172, 254, 0.15);
+    border: 1px solid rgba(79, 172, 254, 0.4);
+    color: #4facfe;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+.reshuffle-btn:hover {
+    background: rgba(79, 172, 254, 0.3);
+    color: white;
+}
+.reset-main-btn {
+    background: rgba(255, 85, 85, 0.15);
+    border: 1px solid rgba(255, 85, 85, 0.3);
+    color: #ff8888;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+.reset-main-btn:hover {
+    background: rgba(255, 85, 85, 0.3);
+    color: white;
+}
+
+.value-display {
+    color: #7affb5;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+/* HUD Instructions
+   "Drag to move" text at the bottom.
+*/
+.instructions {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: opacity 0.5s;
+}
+
+/* Lock Indicator
+   Appears when user clicks to lock the lens position.
+*/
+#lock-indicator {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    color: #ff5555;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 85, 85, 0.4);
+    display: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-align: center;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    #ui-layer {
+        width: auto; left: 10px; right: 10px; top: auto; bottom: 10px;
+        max-height: 40vh;
+    }
+    .ui-header h1 { font-size: 1rem; }
+    #toggle-btn { padding: 10px 15px; font-size: 1.5rem; }
+    .preset-btn, .model-btn, .reshuffle-btn, .reset-main-btn { padding: 12px 0; font-size: 0.85rem; }
+    input[type="range"] { height: 20px; }
+    .instructions { bottom: auto; top: 20px; font-size: 0.7rem; }
+    #ui-layer.minimized .control-content { display: none; }
+    #ui-layer.minimized { height: auto; padding-bottom: 0; }
+}
