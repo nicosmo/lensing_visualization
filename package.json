@@ -1,0 +1,33 @@
+{
+  "name": "lensing-visualization",
+  "version": "1.0.0",
+  "description": "Interactive visualization of gravitational lensing effects",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
+    "lint": "eslint js/**/*.js",
+    "lint:fix": "eslint js/**/*.js --fix",
+    "format": "prettier --write \"js/**/*.js\" \"css/**/*.css\" \"*.html\"",
+    "format:check": "prettier --check \"js/**/*.js\" \"css/**/*.css\" \"*.html\""
+  },
+  "keywords": [
+    "gravitational-lensing",
+    "visualization",
+    "astronomy",
+    "webgl",
+    "threejs"
+  ],
+  "author": "Nico Schuster and Andres Salcedo",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.2.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicosmo/lensing_visualization"
+  }
+}

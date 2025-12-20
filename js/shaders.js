@@ -298,5 +298,5 @@ const fragmentShader = `
 // Export shaders for use in other modules
 window.LensingShaders = {
     vertexShader,
-    fragmentShader
+    fragmentShader,
 };

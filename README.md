@@ -45,9 +45,80 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 
 ### Running Locally
 For the best experience (and to avoid browser security restrictions with local textures), it is recommended to use a local server rather than double-clicking the HTML file:
+
 1. Open your terminal in the project folder.
-2. Run `python3 -m http.server`
-3. Open `http://localhost:8000` in your browser.
+2. Run `make install` to install dependencies (requires [Node.js](https://nodejs.org/))
+3. Run `make dev` to start the development server
+4. Open `http://localhost:8080` in your browser.
+
+Alternatively, you can use any local HTTP server (e.g., `python3 -m http.server 8080`).
+
+---
+
+## Project Structure
+
+```
+lensing_visualization/
+├── index.html              # Main HTML file with UI structure
+├── css/
+│   └── styles.css          # All CSS styles
+├── js/
+│   ├── utils.js            # Seeded RNG & helper functions
+│   ├── galaxy-factory.js   # Galaxy sprite generation
+│   ├── textures.js         # Texture creation functions
+│   ├── shaders.js          # WebGL vertex & fragment shaders
+│   ├── ui.js               # UI controls & event handlers
+│   └── app.js              # Main application initialization
+├── Makefile                # Build/dev commands
+├── package.json            # NPM dependencies & scripts
+├── .eslintrc.json          # ESLint configuration
+├── .prettierrc             # Prettier configuration
+└── .gitignore              # Git ignore rules
+```
+
+---
+
+## Development
+
+### Dependencies
+
+Development dependencies (linting & formatting):
+* [ESLint](https://eslint.org/) - JavaScript linting (Airbnb style guide)
+* [Prettier](https://prettier.io/) - Code formatting
+* Python 3 - Local development server (built-in `http.server`)
+
+Install dependencies:
+```bash
+make install
+```
+
+### Make Commands
+
+| Command | Description |
+|---------|-------------|
+| `make help` | Show all available commands |
+| `make install` | Install npm dependencies |
+| `make dev` | Start development server on port 8080 |
+| `make start` | Alias for `make dev` |
+| `make lint` | Run ESLint to check for issues |
+| `make lint-fix` | Auto-fix linting issues |
+| `make format` | Format code with Prettier |
+| `make format-check` | Check code formatting |
+| `make clean` | Remove node_modules |
+| `make reinstall` | Clean and reinstall dependencies |
+
+### NPM Scripts
+
+You can also use npm directly:
+```bash
+npm run lint        # Check for linting errors
+npm run lint:fix    # Auto-fix linting errors
+npm run format      # Format all files
+npm run format:check # Check formatting
+npm start           # Start dev server
+```
+
+---
 
 
 ## Usage

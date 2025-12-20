@@ -1,138 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Visualizing Gravitational Lensing</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <title>Visualizing Gravitational Lensing</title>
+        <link rel="stylesheet" href="css/styles.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    </head>
+    <body>
+        <div id="loading">Generating Galaxy Field...</div>
+        <div id="canvas-container"></div>
+        <div id="lock-indicator">LOCKED</div>
 
-    <div id="loading">Generating Galaxy Field...</div>
-    <div id="canvas-container"></div>
-    <div id="lock-indicator">LOCKED</div>
-
-    <div id="ui-layer">
-        <div class="ui-header">
-            <h1>Lensing Visualization </h1>
-            <button id="toggle-btn" title="Toggle Settings">–</button>
-        </div>
-
-        <div class="control-content">
-            <p>Interactive visualization of a massive cluster or a cosmic void bending light from background layers. A qualitative representation of lensing effects.</p>
-            <p id="credit-text" class="credit-text">Concept & Visualization by Nico Schuster and Andres Salcedo</p>
-            <p class="credit-text" style="margin-top: -8px;">
-            <a href="https://github.com/nicosmo/lensing_visualization/" target="_blank" style="color: #4facfe; text-decoration: none;">Code and more info on GitHub</a>
-            </p>
-
-            <div class="control-group">
-                <label>Physics Model</label>
-                <div class="model-options">
-                    <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
-                    <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
-                    <button class="model-btn" id="btn-model-void" data-model="2">Voids</button>
-                </div>
+        <div id="ui-layer">
+            <div class="ui-header">
+                <h1>Lensing Visualization</h1>
+                <button id="toggle-btn" title="Toggle Settings">–</button>
             </div>
 
-            <div class="control-group">
-                <label>Background Source</label>
-                <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
-                    <div style="display: flex; gap: 4px;">
-                        <button class="preset-btn active" id="btn-galaxies" data-type="galaxies" style="flex:1">Galaxies</button>
-                        <button class="preset-btn" id="btn-bw" data-type="bw-grid" style="flex:1">B&W Line Grid</button>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button class="preset-btn" id="btn-col" data-type="color-grid" style="flex:1">Color Line Grid</button>
-                        <button class="preset-btn" id="btn-dotted" data-type="dotted-grid" style="flex:1">Color Dotted Grid</button>
+            <div class="control-content">
+                <p>
+                    Interactive visualization of a massive cluster or a cosmic void bending light from background layers. A qualitative
+                    representation of lensing effects.
+                </p>
+                <p id="credit-text" class="credit-text">Concept & Visualization by Nico Schuster and Andres Salcedo</p>
+                <p class="credit-text" style="margin-top: -8px">
+                    <a
+                        href="https://github.com/nicosmo/lensing_visualization/"
+                        target="_blank"
+                        style="color: #4facfe; text-decoration: none"
+                        >Code and more info on GitHub</a
+                    >
+                </p>
+
+                <div class="control-group">
+                    <label>Physics Model</label>
+                    <div class="model-options">
+                        <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
+                        <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
+                        <button class="model-btn" id="btn-model-void" data-model="2">Voids</button>
                     </div>
                 </div>
 
-                <div id="layer-list" class="layer-list"></div>
+                <div class="control-group">
+                    <label>Background Source</label>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px">
+                        <div style="display: flex; gap: 4px">
+                            <button class="preset-btn active" id="btn-galaxies" data-type="galaxies" style="flex: 1">Galaxies</button>
+                            <button class="preset-btn" id="btn-bw" data-type="bw-grid" style="flex: 1">B&W Line Grid</button>
+                        </div>
+                        <div style="display: flex; gap: 4px">
+                            <button class="preset-btn" id="btn-col" data-type="color-grid" style="flex: 1">Color Line Grid</button>
+                            <button class="preset-btn" id="btn-dotted" data-type="dotted-grid" style="flex: 1">Color Dotted Grid</button>
+                        </div>
+                    </div>
 
-                <label for="bg-upload" id="upload-label" class="file-upload-btn">Add Own Background Image</label>
-                <input type="file" id="bg-upload" accept="image/*">
-            </div>
+                    <div id="layer-list" class="layer-list"></div>
 
-            <div class="control-group">
-                <label id="mass-label">
-                    Cluster Mass
-                    <span id="mass-val" class="value-display">100%</span>
-                </label>
-                <input type="range" id="mass-slider" min="0" max="200" value="100">
-            </div>
+                    <label for="bg-upload" id="upload-label" class="file-upload-btn">Add Own Background Image</label>
+                    <input type="file" id="bg-upload" accept="image/*" />
+                </div>
 
-            <div class="control-group">
-                <label id="spread-label">
-                    Cluster Spread
-                    <span id="spread-val" class="value-display">1.00x</span>
-                </label>
-                <input type="range" id="spread-slider" min="0" max="200" value="100">
-            </div>
+                <div class="control-group">
+                    <label id="mass-label">
+                        Cluster Mass
+                        <span id="mass-val" class="value-display">100%</span>
+                    </label>
+                    <input type="range" id="mass-slider" min="0" max="200" value="100" />
+                </div>
 
-            <div class="control-group">
-                <label>
-                    Number Of Background Layers
-                    <span id="layers-val" class="value-display">3</span>
-                </label>
-                <input type="range" id="layers-slider" min="1" max="8" step="1" value="3">
-            </div>
+                <div class="control-group">
+                    <label id="spread-label">
+                        Cluster Spread
+                        <span id="spread-val" class="value-display">1.00x</span>
+                    </label>
+                    <input type="range" id="spread-slider" min="0" max="200" value="100" />
+                </div>
 
-            <div class="control-group">
-                <label>
-                    <span id="density-label-text">Galaxy Density</span>
-                    <span id="density-val" class="value-display">100%</span>
-                </label>
-                <input type="range" id="density-slider" min="0" max="200" value="100">
-            </div>
+                <div class="control-group">
+                    <label>
+                        Number Of Background Layers
+                        <span id="layers-val" class="value-display">3</span>
+                    </label>
+                    <input type="range" id="layers-slider" min="1" max="8" step="1" value="3" />
+                </div>
 
-            <div class="control-group">
-                <label>
-                    Galaxy Brightness
-                    <span id="bright-val" class="value-display">100%</span>
-                </label>
-                <input type="range" id="bright-slider" min="0" max="200" value="100">
-            </div>
+                <div class="control-group">
+                    <label>
+                        <span id="density-label-text">Galaxy Density</span>
+                        <span id="density-val" class="value-display">100%</span>
+                    </label>
+                    <input type="range" id="density-slider" min="0" max="200" value="100" />
+                </div>
 
-            <div class="control-group">
-                <label>
-                    Show Foreground Galaxies
-                    <input type="checkbox" id="fg-check" checked>
-                </label>
-            </div>
+                <div class="control-group">
+                    <label>
+                        Galaxy Brightness
+                        <span id="bright-val" class="value-display">100%</span>
+                    </label>
+                    <input type="range" id="bright-slider" min="0" max="200" value="100" />
+                </div>
 
-            <div class="control-group">
-                <label>
-                    Show Cluster Member Galaxies
-                    <input type="checkbox" id="cluster-check" checked>
-                </label>
-            </div>
+                <div class="control-group">
+                    <label>
+                        Show Foreground Galaxies
+                        <input type="checkbox" id="fg-check" checked />
+                    </label>
+                </div>
 
-            <div class="control-group">
-                <label id="core-label">
-                    Show Dark Matter Halo
-                    <input type="checkbox" id="core-check" checked>
-                </label>
-            </div>
+                <div class="control-group">
+                    <label>
+                        Show Cluster Member Galaxies
+                        <input type="checkbox" id="cluster-check" checked />
+                    </label>
+                </div>
 
-            <div class="reset-container">
-                <button id="reshuffle-btn" class="reshuffle-btn">Reshuffle Galaxies</button>
-                <button id="snapshot-btn" class="reshuffle-btn">Save Snapshot</button>
-                <button id="reset-main" class="reset-main-btn">Reset All Settings</button>
+                <div class="control-group">
+                    <label id="core-label">
+                        Show Dark Matter Halo
+                        <input type="checkbox" id="core-check" checked />
+                    </label>
+                </div>
+
+                <div class="reset-container">
+                    <button id="reshuffle-btn" class="reshuffle-btn">Reshuffle Galaxies</button>
+                    <button id="snapshot-btn" class="reshuffle-btn">Save Snapshot</button>
+                    <button id="reset-main" class="reset-main-btn">Reset All Settings</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="instructions" id="instruct">Drag to move • Click to Lock</div>
+        <div class="instructions" id="instruct">Drag to move • Click to Lock</div>
 
-    <!-- Modular JavaScript Files -->
-    <script src="js/utils.js"></script>
-    <script src="js/galaxy-factory.js"></script>
-    <script src="js/textures.js"></script>
-    <script src="js/shaders.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
-</body>
+        <!-- Modular JavaScript Files -->
+        <script src="js/utils.js"></script>
+        <script src="js/galaxy-factory.js"></script>
+        <script src="js/textures.js"></script>
+        <script src="js/shaders.js"></script>
+        <script src="js/ui.js"></script>
+        <script src="js/app.js"></script>
+    </body>
 </html>
-
-

@@ -19,17 +19,17 @@ function createBackgroundTexture(density) {
     const rng = LensingUtils.mulberry32(LensingUtils.getMasterSeed() + 1);
 
     // Dark background
-    ctx.fillStyle = "#010102";
+    ctx.fillStyle = '#010102';
     ctx.fillRect(0, 0, size, size);
 
     // Add diffuse background nebulosity
     for (let i = 0; i < 60; i++) {
         const x = rng() * size;
         const y = rng() * size;
-        const r = rng() * (size * 0.15) + (size * 0.05);
+        const r = rng() * (size * 0.15) + size * 0.05;
         const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-        grad.addColorStop(0, `hsla(220, 40%, 15%, 0.05)`);
-        grad.addColorStop(1, "transparent");
+        grad.addColorStop(0, 'hsla(220, 40%, 15%, 0.05)');
+        grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
         ctx.globalCompositeOperation = 'lighter';
         ctx.beginPath();
@@ -45,12 +45,17 @@ function createBackgroundTexture(density) {
     const sizeScale = size / 2048;
 
     for (let i = 0; i < count; i++) {
-        drawGalaxyClassic(ctx, size, {
-            isForeground: false,
-            isCluster: false,
-            minSize: 2.0 * sizeScale,
-            maxSize: 10.0 * sizeScale
-        }, rng);
+        drawGalaxyClassic(
+            ctx,
+            size,
+            {
+                isForeground: false,
+                isCluster: false,
+                minSize: 2.0 * sizeScale,
+                maxSize: 10.0 * sizeScale,
+            },
+            rng,
+        );
     }
     return new THREE.CanvasTexture(canvas);
 }
@@ -68,20 +73,22 @@ function createBWGridTexture() {
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, size, size);
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ffffff";
+    ctx.strokeStyle = '#ffffff';
 
     const gridSize = 128;
     const steps = size / gridSize;
 
     ctx.beginPath();
-    for(let i = 0; i <= steps; i++) {
+    for (let i = 0; i <= steps; i++) {
         const p = i * gridSize;
-        ctx.moveTo(p, 0); ctx.lineTo(p, size);
-        ctx.moveTo(0, p); ctx.lineTo(size, p);
+        ctx.moveTo(p, 0);
+        ctx.lineTo(p, size);
+        ctx.moveTo(0, p);
+        ctx.lineTo(size, p);
     }
     ctx.stroke();
 
@@ -99,32 +106,34 @@ function createColorGridTexture() {
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, size, size);
 
     const gridSize = 128;
     const steps = size / gridSize;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ff00ff";
+    ctx.strokeStyle = '#ff00ff';
     ctx.beginPath();
-    for(let i = 0; i <= steps; i++) {
+    for (let i = 0; i <= steps; i++) {
         const p = i * gridSize;
-        ctx.moveTo(p, 0); ctx.lineTo(p, size);
+        ctx.moveTo(p, 0);
+        ctx.lineTo(p, size);
     }
     ctx.stroke();
 
-    ctx.strokeStyle = "#00ffff";
+    ctx.strokeStyle = '#00ffff';
     ctx.beginPath();
-    for(let i = 0; i <= steps; i++) {
+    for (let i = 0; i <= steps; i++) {
         const p = i * gridSize;
-        ctx.moveTo(0, p); ctx.lineTo(size, p);
+        ctx.moveTo(0, p);
+        ctx.lineTo(size, p);
     }
     ctx.stroke();
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(size/2, size/2, 8, 0, Math.PI*2);
+    ctx.arc(size / 2, size / 2, 8, 0, Math.PI * 2);
     ctx.fill();
 
     return new THREE.CanvasTexture(canvas);
@@ -142,7 +151,7 @@ function createDottedGridTexture(density) {
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, size, size);
 
     // Higher density means smaller spacing
@@ -152,14 +161,14 @@ function createDottedGridTexture(density) {
     const steps = Math.round(size / idealSpacing);
     const spacing = size / steps; // Ensures perfect wrapping
 
-    for(let x = 0; x <= size; x += spacing) {
+    for (let x = 0; x <= size; x += spacing) {
         // Rainbow from left to right (Hue based on X coordinate)
         const hue = (x / size) * 360;
         ctx.fillStyle = `hsl(${hue}, 100%, 70%)`;
 
-        for(let y = 0; y <= size; y += spacing) {
+        for (let y = 0; y <= size; y += spacing) {
             ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI*2);
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -190,27 +199,27 @@ function createClusterTexture(density) {
     const count = Math.floor(baseCount * density);
     const sizeScale = size / 1024;
 
-    for(let i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
         // Concentrate galaxies towards the center to simulate a cluster
-        const rPower = Math.pow(rng(), 1.6);
+        const rPower = rng() ** 1.6;
         const r = rPower * (size * 0.45);
         const theta = rng() * Math.PI * 2;
-        const x = size/2 + r * Math.cos(theta);
-        const y = size/2 + r * Math.sin(theta);
+        const x = size / 2 + r * Math.cos(theta);
+        const y = size / 2 + r * Math.sin(theta);
 
-        let isSpiral = rng() > 0.5;
-        let sizeConfig = {
+        const isSpiral = rng() > 0.5;
+        const sizeConfig = {
             isForeground: false,
             isCluster: true,
             minSize: 30 * sizeScale,
-            maxSize: 90 * sizeScale
+            maxSize: 90 * sizeScale,
         };
 
         if (isSpiral) {
             ctx.globalCompositeOperation = 'source-over';
             const type = rng() > 0.5 ? 'blueSpiral' : 'redSpiral';
             const sprite = GalaxyFactory.getRandomSprite(type, rng);
-            let s = sizeConfig.minSize + rng() * (sizeConfig.maxSize - sizeConfig.minSize);
+            const s = sizeConfig.minSize + rng() * (sizeConfig.maxSize - sizeConfig.minSize);
             const rot = rng() * Math.PI * 2;
             const tilt = 0.5 + rng() * 0.5;
 
@@ -218,19 +227,19 @@ function createClusterTexture(density) {
             ctx.translate(x, y);
             ctx.rotate(rot);
             ctx.scale(1, tilt);
-            ctx.drawImage(sprite, -s/2, -s/2, s, s);
+            ctx.drawImage(sprite, -s / 2, -s / 2, s, s);
             ctx.restore();
         } else {
             ctx.globalCompositeOperation = 'screen';
             ctx.save();
             ctx.translate(x, y);
 
-            let hue = 25 + rng() * 40;
-            let sat = 60 + rng() * 40;
-            let light = 70 + rng() * 20;
-            let s = sizeConfig.minSize + rng() * (sizeConfig.maxSize - sizeConfig.minSize);
-            let aspect = 0.4 + rng() * 0.6;
-            let angle = rng() * Math.PI * 2;
+            const hue = 25 + rng() * 40;
+            const sat = 60 + rng() * 40;
+            const light = 70 + rng() * 20;
+            const s = sizeConfig.minSize + rng() * (sizeConfig.maxSize - sizeConfig.minSize);
+            const aspect = 0.4 + rng() * 0.6;
+            const angle = rng() * Math.PI * 2;
 
             ctx.rotate(angle);
             ctx.scale(1, aspect);
@@ -247,7 +256,7 @@ function createClusterTexture(density) {
             const diskGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, s);
             diskGrad.addColorStop(0, `hsla(${hue}, ${sat}%, ${light}%, 0.4)`);
             diskGrad.addColorStop(0.6, `hsla(${hue}, ${sat}%, ${light}%, 0.1)`);
-            diskGrad.addColorStop(1, "transparent");
+            diskGrad.addColorStop(1, 'transparent');
             ctx.fillStyle = diskGrad;
             ctx.beginPath();
             ctx.arc(0, 0, s, 0, Math.PI * 2);
@@ -284,13 +293,18 @@ function createForegroundTexture(density) {
     const count = Math.floor(baseCount * density);
     const sizeScale = size / 2048;
 
-    for(let i = 0; i < count; i++) {
-        drawForegroundSprite(ctx, size, {
-            isForeground: true,
-            isCluster: false,
-            minSize: 25 * sizeScale,
-            maxSize: 90 * sizeScale
-        }, rng);
+    for (let i = 0; i < count; i++) {
+        drawForegroundSprite(
+            ctx,
+            size,
+            {
+                isForeground: true,
+                isCluster: false,
+                minSize: 25 * sizeScale,
+                maxSize: 90 * sizeScale,
+            },
+            rng,
+        );
     }
     return new THREE.CanvasTexture(canvas);
 }
@@ -302,5 +316,5 @@ window.LensingTextures = {
     createColorGridTexture,
     createDottedGridTexture,
     createClusterTexture,
-    createForegroundTexture
+    createForegroundTexture,
 };
