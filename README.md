@@ -9,7 +9,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 **Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW, Voids), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance.
 
-![Lensing Example Plot](lensing_example.png)
+![Lensing Example Plot](examples/lensing_example.png)
 
 ## Features
 
@@ -47,11 +47,8 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 For the best experience (and to avoid browser security restrictions with local textures), it is recommended to use a local server rather than double-clicking the HTML file:
 
 1. Open your terminal in the project folder.
-2. Run `make install` to install dependencies (requires [Node.js](https://nodejs.org/))
-3. Run `make dev` to start the development server
-4. Open `http://localhost:8080` in your browser.
-
-Alternatively, you can use any local HTTP server (e.g., `python3 -m http.server 8080`).
+2. Run `python3 -m http.server 8080`
+3. Open `http://localhost:8080` in your browser.
 
 ---
 
@@ -69,7 +66,9 @@ lensing_visualization/
 │   ├── shaders.js          # WebGL vertex & fragment shaders
 │   ├── ui.js               # UI controls & event handlers
 │   └── app.js              # Main application initialization
-├── Makefile                # Build/dev commands
+├── examples/
+│   ├── lensing_example.png # Screenshot used in README
+│   └── Hubble_ultra_deep_field_high_rez.jpg # Sample background image
 ├── package.json            # NPM dependencies & scripts
 ├── .eslintrc.json          # ESLint configuration
 ├── .prettierrc             # Prettier configuration
@@ -86,36 +85,21 @@ Development dependencies (linting & formatting):
 * [ESLint](https://eslint.org/) - JavaScript linting (Airbnb style guide)
 * [Prettier](https://prettier.io/) - Code formatting
 * Python 3 - Local development server (built-in `http.server`)
+* [Node.js + npm](https://nodejs.org/) - Required only for the linting/formatting toolchain
 
-Install dependencies:
+Install (optional) dev tooling dependencies:
 ```bash
-make install
+npm install
 ```
 
-### Make Commands
+### NPM Scripts (Dev Tooling)
 
-| Command | Description |
-|---------|-------------|
-| `make help` | Show all available commands |
-| `make install` | Install npm dependencies |
-| `make dev` | Start development server on port 8080 |
-| `make start` | Alias for `make dev` |
-| `make lint` | Run ESLint to check for issues |
-| `make lint-fix` | Auto-fix linting issues |
-| `make format` | Format code with Prettier |
-| `make format-check` | Check code formatting |
-| `make clean` | Remove node_modules |
-| `make reinstall` | Clean and reinstall dependencies |
-
-### NPM Scripts
-
-You can also use npm directly:
+Use npm for linting and formatting tasks:
 ```bash
 npm run lint        # Check for linting errors
 npm run lint:fix    # Auto-fix linting errors
 npm run format      # Format all files
 npm run format:check # Check formatting
-npm start           # Start dev server
 ```
 
 ---
@@ -144,7 +128,7 @@ You can upload your own images to test the lensing effect:
 
 ### Included Test Data
 This repository includes a high-resolution astronomical image for testing:
-* **File:** `Hubble_ultra_deep_field_high_rez.jpg`
+* **File:** `examples/Hubble_ultra_deep_field_high_rez.jpg`
 * **Description:** A section of the Hubble Ultra-Deep Field, ideal for visualizing how a cluster/void distorts a realistic background field.
 * **Source:** Wikipedia (Accessed Dec 17, 2025).
 
