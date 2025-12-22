@@ -1,15 +1,14 @@
 const CACHE_NAME = 'lensing-viz-v1';
 const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/utils.js',
-    '/js/galaxy-factory.js',
-    '/js/textures.js',
-    '/js/shaders.js',
-    '/js/ui.js',
-    '/js/app.js',
-    '/manifest.json',
+    './index.html',
+    './css/styles.css',
+    './js/utils.js',
+    './js/galaxy-factory.js',
+    './js/textures.js',
+    './js/shaders.js',
+    './js/ui.js',
+    './js/app.js',
+    './manifest.json',
     'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
 ];
 
@@ -87,7 +86,7 @@ self.addEventListener('fetch', (event) => {
                     .catch(() => {
                         // Return offline fallback for navigation requests
                         if (event.request.mode === 'navigate') {
-                            return caches.match('/index.html');
+                            return caches.match('./index.html');
                         }
                         return null;
                     });
