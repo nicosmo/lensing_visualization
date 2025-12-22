@@ -47,8 +47,8 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 For the best experience (and to avoid browser security restrictions with local textures), it is recommended to use a local server rather than double-clicking the HTML file:
 
 1. Open your terminal in the project folder.
-2. Run `python3 -m http.server 8080`
-3. Open `http://localhost:8080` in your browser.
+2. Run `python3 -m http.server 8000`
+3. Open `http://localhost:0000` in your browser.
 
 ---
 
@@ -82,9 +82,6 @@ lensing_visualization/
 ### Dependencies
 
 Development dependencies (linting & formatting):
-* [ESLint](https://eslint.org/) - JavaScript linting (Airbnb style guide)
-* [Prettier](https://prettier.io/) - Code formatting
-* Python 3 - Local development server (built-in `http.server`)
 * [Node.js + npm](https://nodejs.org/) - Required only for the linting/formatting toolchain
 
 Install (optional) dev tooling dependencies:
