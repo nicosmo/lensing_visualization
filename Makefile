@@ -1,7 +1,7 @@
 # Makefile for Lensing Visualization
 # ===================================
 
-.PHONY: help install dev start lint lint-fix format format-check clean
+.PHONY: help install dev start lint lint-fix format format-check clean icons
 
 # Default target
 help:
@@ -13,6 +13,7 @@ help:
 	@echo "  make lint-fix     - Run ESLint with auto-fix"
 	@echo "  make format       - Format code with Prettier"
 	@echo "  make format-check - Check code formatting"
+	@echo "  make icons        - Generate PWA icons from SVG"
 	@echo "  make clean        - Remove node_modules"
 
 # Install dependencies
@@ -40,6 +41,13 @@ format:
 
 format-check:
 	npm run format:check
+
+# Generate PWA icons
+## icons: Open PWA icon generator in browser
+icons:
+	@echo "Opening icon generator in browser..."
+	@echo "Click 'Download All' to save icons, then move them to icons/ folder"
+	@open scripts/generate-icons.html || xdg-open scripts/generate-icons.html || echo "Open scripts/generate-icons.html in your browser"
 
 # Clean up
 clean:

@@ -9,7 +9,7 @@
     "lint": "eslint js/**/*.js",
     "lint:fix": "eslint js/**/*.js --fix",
     "format": "prettier --write \"js/**/*.js\" \"css/**/*.css\" \"*.html\"",
-    "format:check": "prettier --check \"js/**/*.js\" \"css/**/*.css\" \"*.html\""
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "gravitational-lensing",
