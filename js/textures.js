@@ -145,7 +145,8 @@ function createColorGridTexture() {
  * @returns {THREE.CanvasTexture} The generated dotted grid texture
  */
 function createDottedGridTexture(density) {
-    const size = 2048;
+    const isMobile = window.innerWidth < 768;
+    const size = isMobile ? 1024 : 2048;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
