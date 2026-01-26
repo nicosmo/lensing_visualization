@@ -62,10 +62,6 @@ self.addEventListener('fetch', (event) => {
 
                 return fetch(event.request)
                     .then((response) => {
-                        if (!response) {
-                            return response;
-                        }
-
                         const url = event.request.url;
                         const isCdnResource = url.includes('cdnjs');
                         const isSuccessful = response.status === 200;
