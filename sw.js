@@ -1,0 +1,103 @@
+const CACHE_NAME = 'lensing-viz-v1';
+const ASSETS_TO_CACHE = [
+    './index.html',
+    './css/styles.css',
+    './js/utils.js',
+    './js/galaxy-factory.js',
+    './js/textures.js',
+    './js/shaders.js',
+    './js/ui.js',
+    './js/app.js',
+    './manifest.json',
+    './icons/icon-192x192.png',
+    './icons/icon-512x512.png',
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+];
+
+// Install event - cache assets
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                return cache.addAll(ASSETS_TO_CACHE);
+            })
+            .then(() => {
+                // Activate immediately
+                return self.skipWaiting();
+            })
+    );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames
+                        .filter((name) => name !== CACHE_NAME)
+                        .map((name) => caches.delete(name))
+                );
+            })
+            .then(() => {
+                // Take control of all pages immediately
+                return self.clients.claim();
+            })
+    );
+});
+
+// Fetch event - serve from cache, fall back to network
+self.addEventListener('fetch', (event) => {
+    // Skip non-GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+
+                return fetch(event.request)
+                    .then((response) => {
+                        const url = event.request.url;
+                        const isCdnResource = url.includes('cdnjs');
+                        const isSuccessful = response.status === 200;
+                        const isOpaque = response.type === 'opaque';
+
+                        // Cache CDN resources explicitly, including opaque responses
+                        if (isCdnResource && (isSuccessful || isOpaque)) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                            return response;
+                        }
+
+                        // Cache successful same-origin basic responses
+                        if (response.type === 'basic' && isSuccessful) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
+                        return response;
+                    })
+                    .catch((error) => {
+                        console.error('Service worker fetch failed; providing offline fallback if possible.', error);
+                        // Return offline fallback for navigation requests
+                        if (event.request.mode === 'navigate') {
+                            return caches.match('./index.html');
+                        }
+                        return new Response('You are offline and the requested resource is not available in the cache.', {
+                            status: 503,
+                            headers: { 'Content-Type': 'text/plain' }
+                        });
+                    });
+            })
+    );
+});

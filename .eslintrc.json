@@ -10,6 +10,7 @@
     "ecmaVersion": "latest",
     "sourceType": "script"
   },
+  "ignorePatterns": ["sw.js", "scripts/"],
   "globals": {
     "THREE": "readonly",
     "LensingUtils": "writable",

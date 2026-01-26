@@ -4,6 +4,21 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <title>Visualizing Gravitational Lensing</title>
+        
+        <!-- PWA Meta Tags -->
+        <meta name="description" content="Interactive visualization of gravitational lensing effects from galaxy clusters and cosmic voids" />
+        <meta name="theme-color" content="#4facfe" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Lensing Viz" />
+        
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="manifest.json" />
+        
+        <!-- Icons -->
+        <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+        
         <link rel="stylesheet" href="css/styles.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     </head>
@@ -139,5 +154,20 @@
         <script src="js/shaders.js"></script>
         <script src="js/ui.js"></script>
         <script src="js/app.js"></script>
+        
+        <!-- Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(function(registration) {
+                            console.log('ServiceWorker registered:', registration.scope);
+                        })
+                        .catch(function(error) {
+                            console.log('ServiceWorker registration failed:', error);
+                        });
+                });
+            }
+        </script>
     </body>
 </html>
