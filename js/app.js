@@ -27,6 +27,16 @@ const LensingApp = {
         showForeground: 1.0,
         showCluster: 1.0,
         model: 0,
+
+        // Toy Model Defaults
+        wallDensity: 0.05,
+        wallWidth: 0.05,
+
+        // HSW Model Defaults
+        hswDeltac: -0.8,
+        hswRs: 0.9,
+        hswAlpha: 4.0,
+        hswBeta: 15.0
     },
 
     // Current Configuration (will be a copy of defaultConfig)
@@ -83,6 +93,19 @@ function init() {
     fgTex.wrapS = THREE.RepeatWrapping;
     fgTex.wrapT = THREE.RepeatWrapping;
 
+    // --- HSW Data Texture Initialization ---
+    // We use a Float32Array to store the deflection profile.
+    // LuminanceFormat is used for maximum compatibility (WebGL 1 & 2).
+    // 8192 size matches ui.js calculation.
+    // FIX: Use RGBA (4 channels) and NearestFilter for maximum device compatibility.
+    // Float textures with LinearFilter often fail on mobile/WebGL2 without extensions.
+    const hswData = new Float32Array(8192 * 4);
+    LensingApp.hswTexture = new THREE.DataTexture(hswData, 8192, 1, THREE.RGBAFormat, THREE.FloatType);
+
+    LensingApp.hswTexture.minFilter = THREE.NearestFilter;
+    LensingApp.hswTexture.magFilter = THREE.NearestFilter;
+    LensingApp.hswTexture.needsUpdate = true;
+
     document.getElementById('loading').style.display = 'none';
 
     // Prepare uniforms for manual user uploads (up to 8 layers)
@@ -97,10 +120,19 @@ function init() {
         ...manualUniforms,
         u_cluster: { value: clusterTex },
         u_fg: { value: fgTex },
+
+        // HSW Texture passed to shader
+        u_hsw_tex: { value: LensingApp.hswTexture },
+
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_mass: { value: config.mass },
         u_spread: { value: config.spread },
+
+        // Toy Model Parameters
+        u_wall_density: { value: config.wallDensity },
+        u_wall_width: { value: config.wallWidth },
+
         u_layers: { value: config.layers },
         u_brightness: { value: config.brightness },
         u_show_core: { value: config.showCore },
@@ -281,6 +313,10 @@ function animate(time) {
     material.uniforms.u_time.value = time * 0.001;
     material.uniforms.u_mass.value = config.mass;
     material.uniforms.u_spread.value = config.spread;
+
+    // Pass Toy Model parameters to shader
+    material.uniforms.u_wall_density.value = config.wallDensity;
+    material.uniforms.u_wall_width.value = config.wallWidth;
 
     // Handle switching between manual upload layers and procedural layers
     if (LensingApp.manualLayers.length > 1) {

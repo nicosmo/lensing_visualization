@@ -4,23 +4,62 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <title>Visualizing Gravitational Lensing</title>
-        
+
         <!-- PWA Meta Tags -->
         <meta name="description" content="Interactive visualization of gravitational lensing effects from galaxy clusters and cosmic voids" />
         <meta name="theme-color" content="#4facfe" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Lensing Viz" />
-        
+
         <!-- PWA Manifest -->
         <link rel="manifest" href="manifest.json" />
-        
+
         <!-- Icons -->
         <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
         <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
-        
+
         <link rel="stylesheet" href="css/styles.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+        <style>
+            .model-options {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+            }
+
+            .paper-link {
+                display: none;
+                font-size: 0.75rem;
+                margin-top: 4px;
+                margin-bottom: 8px;
+                text-align: right;
+            }
+            .paper-link a {
+                color: #7affb5;
+                text-decoration: none;
+                border-bottom: 1px dashed #7affb5;
+                transition: opacity 0.2s;
+            }
+            .paper-link a:hover {
+                opacity: 0.8;
+            }
+
+            #plot-container {
+                display: none;
+                margin-top: 12px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding-top: 12px;
+            }
+            #mass-plot {
+                width: 100%;
+                height: 120px;
+                background: rgba(0,0,0,0.3);
+                border-radius: 4px;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+        </style>
     </head>
     <body>
         <div id="loading">Generating Galaxy Field...</div>
@@ -53,7 +92,11 @@
                     <div class="model-options">
                         <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
                         <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
-                        <button class="model-btn" id="btn-model-void" data-model="2">Voids</button>
+                        <button class="model-btn" id="btn-model-void" data-model="2">Void Toy Model</button>
+                        <button class="model-btn" id="btn-model-hsw" data-model="3">HSW Void</button>
+                    </div>
+                    <div id="hsw-link" class="paper-link">
+                        <a href="https://arxiv.org/abs/1403.5499" target="_blank">View HSW Paper (arXiv:1403.5499) ↗</a>
                     </div>
                 </div>
 
@@ -84,12 +127,52 @@
                     <input type="range" id="mass-slider" min="0" max="200" value="100" />
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="group-spread">
                     <label id="spread-label">
                         Cluster Spread
                         <span id="spread-val" class="value-display">1.00x</span>
                     </label>
                     <input type="range" id="spread-slider" min="0" max="200" value="100" />
+                </div>
+
+                <div class="control-group" id="group-wall-density" style="display:none;">
+                    <label>
+                        Wall Peak Density
+                        <span id="wall-density-val" class="value-display">0.05</span>
+                    </label>
+                    <input type="range" id="wall-density-slider" min="0" max="50" value="5" />
+                </div>
+
+                <div class="control-group" id="group-wall-width" style="display:none;">
+                    <label>
+                        Wall Outer Edge
+                        <span id="wall-width-val" class="value-display">1.05x</span>
+                    </label>
+                    <input type="range" id="wall-width-slider" min="1" max="100" value="5" />
+                </div>
+
+                <div class="control-group" id="group-hsw-rs" style="display:none;">
+                    <label>
+                        Scale Radius (r_s / r_v)
+                        <span id="hsw-rs-val" class="value-display">0.90</span>
+                    </label>
+                    <input type="range" id="hsw-rs-slider" min="10" max="150" value="90" />
+                </div>
+
+                <div class="control-group" id="group-hsw-alpha" style="display:none;">
+                    <label>
+                        Inner Slope (α)
+                        <span id="hsw-alpha-val" class="value-display">4.0</span>
+                    </label>
+                    <input type="range" id="hsw-alpha-slider" min="10" max="100" value="40" />
+                </div>
+
+                <div class="control-group" id="group-hsw-beta" style="display:none;">
+                    <label>
+                        Outer Slope (β)
+                        <span id="hsw-beta-val" class="value-display">15.0</span>
+                    </label>
+                    <input type="range" id="hsw-beta-slider" min="10" max="300" value="150" />
                 </div>
 
                 <div class="control-group">
@@ -137,6 +220,16 @@
                     </label>
                 </div>
 
+                <div class="control-group" id="group-plot-toggle" style="display:none;">
+                    <label>
+                        Show Mass Distribution
+                        <input type="checkbox" id="plot-check" />
+                    </label>
+                    <div id="plot-container">
+                        <canvas id="mass-plot"></canvas>
+                    </div>
+                </div>
+
                 <div class="reset-container">
                     <button id="reshuffle-btn" class="reshuffle-btn">Reshuffle Galaxies</button>
                     <button id="snapshot-btn" class="reshuffle-btn">Save Snapshot</button>
@@ -154,7 +247,7 @@
         <script src="js/shaders.js"></script>
         <script src="js/ui.js"></script>
         <script src="js/app.js"></script>
-        
+
         <!-- Service Worker Registration -->
         <script>
             if ('serviceWorker' in navigator) {

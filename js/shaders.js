@@ -44,99 +44,145 @@ const fragmentShader = `
     uniform float u_model;
     uniform float u_grid_mode;
     uniform float u_use_manual;
+    // Toy Model Specifics
+    uniform float u_wall_density; // Peak density of wall
+    uniform float u_wall_width;   // Width of wall (outer edge - 1.0)
+
+    // HSW Model Texture
+    uniform sampler2D u_hsw_tex;  // Lookup table for HSW deflection
 
     varying vec2 vUv;
 
-    // Calculates the NFW (Navarro-Frenk-White) mass profile
-    // This describes how density falls off in a dark matter halo.
-    float nfw_enclosed(float x) {
-        float val;
-        if (x < 1.0) {
-            float num = log(x/2.0) + log(1.0/x + sqrt(1.0/(x*x) - 1.0)) / sqrt(1.0 - x*x);
-            val = num;
-        } else if (x > 1.0) {
-            float num = log(x/2.0) + acos(1.0/x) / sqrt(x*x - 1.0);
-            val = num;
-        } else {
-            val = 1.0;
+    // --- NFW Deflection Angle (Improved Stability) ---
+    // x: r / rs (radius scaled by scale radius)
+    float nfw_deflection(float x) {
+        // Safety for center
+        if (x < 0.0001) return 0.0;
+
+        // Common term: ln(x/2)
+        float term_log = log(x * 0.5);
+        float term_geo = 0.0;
+
+        // 1. INSIDE (x < 1)
+        if (x < 0.999) {
+            float root = sqrt(1.0 - x * x);
+            // Manual acosh(1/x) = log( (1 + sqrt(1-x^2)) / x )
+            float arg = (1.0 + root) / x;
+            term_geo = log(arg) / root;
         }
-        return val / x;
+        // 2. OUTSIDE (x > 1)
+        else if (x > 1.001) {
+            float root = sqrt(x * x - 1.0);
+            term_geo = acos(1.0 / x) / root;
+        }
+        // 3. SINGULARITY (x ~ 1)
+        else {
+            // Limit as x->1 is exactly 1.0
+            term_geo = 1.0;
+        }
+
+        float g_x = term_log + term_geo;
+
+        // Return deflection (mass / x)
+        return g_x / x;
     }
 
-    // Calculates deflection for the Void model based on the density profile described.
+    // --- Void Toy Model (Exact Quadratic Wall) ---
     // r: distance from center
     // rv: void radius
-    // d_in: inner density contrast (rho_in - 1)
-    float void_deflection(float r, float rv, float d_in) {
+    // d_in: inner density contrast
+    // d_wall: wall peak density
+    // w: wall width
+    float void_toy_deflection(float r, float rv, float d_in, float d_wall, float w) {
+        // Safety check
+        if (r < 0.0001) return 0.0;
+
         float x = r / rv;
-
-        // --- Fixed Model Parameters ---
-        float d_wall = 0.05;
-        float x_core = 0.1;
+        float x_out = 1.0 + w;
+        float x_core = 0.05;
         float lensing_strength = 3.0;
-        // ------------------------------
 
-        // Pre-calculate constants for the profile
-        // k is the steepness of the quadratic rise from x_core to 1.0
-        float k = (d_wall - d_in) / 0.81; // 0.81 is 0.9^2
+        float mass = 0.0;
 
-        // 1. CONSTANT CORE (x < 0.1)
+        // 1. CONSTANT CORE (x < x_core)
         if (x < x_core) {
-            // Integral of constant d_in * u is 0.5 * d_in * x^2
-            // Deflection = strength * Integral / x
-            return lensing_strength * 0.5 * d_in * x;
+            mass = 0.5 * d_in * x * x;
         }
 
-        // 2. QUADRATIC RISE (0.1 <= x < 1.0)
+        // 2. QUADRATIC RISE (x_core <= x < 1.0)
         else if (x < 1.0) {
-            // A. Mass of the core
-            float M_core = 0.5 * d_in * x_core * x_core;
+            // A. Mass of the full core
+            float m_core = 0.5 * d_in * x_core * x_core;
 
-            // B. Mass of the rising part from x_core to x
-            float M_base = 0.5 * d_in * (x * x - x_core * x_core);
+            // B. Integrate Rise
+            float diff = d_wall - d_in;
+            float span = 1.0 - x_core;
+            float scale = 1.0 / (span * span);
+
+            float m_base = 0.5 * d_in * (x*x - x_core*x_core);
 
             float v = x - x_core;
-            float M_rise = k * ( (v*v*v*v)*0.25 + x_core * (v*v*v)*(1.0/3.0) );
+            float term = (v*v*v*v)*0.25 + x_core*(v*v*v)*(1.0/3.0);
+            float m_rise = diff * scale * term;
 
-            return lensing_strength * (M_core + M_base + M_rise) / x;
+            mass = m_core + m_base + m_rise;
         }
 
-        // 3. LINEAR RIDGE DROP (1.0 <= x < 1.05)
-        else if (x < 1.05) {
-            // A. Mass of core + rise (fully integrated up to 1.0)
-            float M_core = 0.5 * d_in * x_core * x_core;
-            float M_base = 0.5 * d_in * (1.0 - x_core * x_core);
-            float v_full = 1.0 - x_core;
-            float M_rise = k * ( (v_full*v_full*v_full*v_full)*0.25 + x_core * (v_full*v_full*v_full)*(1.0/3.0) );
-            float M_inner_total = M_core + M_base + M_rise;
+        // 3. QUADRATIC WALL DROP (1.0 <= x < x_out)
+        // Exact analytical integral of (1+u) * d_wall * (1-u/w)^2
+        else if (x < x_out) {
+            // A. Calculate Total Inner Mass (at x=1.0)
+            float m_core = 0.5 * d_in * x_core * x_core;
+            float m_base_full = 0.5 * d_in * (1.0 - x_core * x_core);
 
-            // B. Mass of the ridge shell
-            // Profile: delta(u) = 1.05 - u
-            // (Note: at u=1.0, delta is 0.05, which matches d_wall )
-            float val_at_x = 0.525 * x * x - (x * x * x) / 3.0;
-            float val_at_1 = 0.525 - 1.0 / 3.0;
-            float M_ridge = val_at_x - val_at_1;
+            float diff = d_wall - d_in;
+            float span = 1.0 - x_core;
+            float scale = 1.0 / (span * span);
+            float v_full = span;
+            float term_full = (v_full*v_full*v_full*v_full)*0.25 + x_core*(v_full*v_full*v_full)*(1.0/3.0);
+            float m_rise_full = diff * scale * term_full;
 
-            return lensing_strength * (M_inner_total + M_ridge) / x;
+            float M_inner = m_core + m_base_full + m_rise_full;
+
+            // B. Integrate the Wall
+            float u = x - 1.0;
+            float q = u / w; // Normalized position 0..1
+
+            float t1 = q;
+            float t2 = q*q * (0.5 * w - 1.0);
+            float t3 = q*q*q * (1.0/3.0 - (2.0/3.0)*w);
+            float t4 = q*q*q*q * 0.25 * w;
+
+            float m_wall = d_wall * w * (t1 + t2 + t3 + t4);
+
+            mass = M_inner + m_wall;
         }
 
-        // 4. OUTSIDE (x >= 1.05)
+        // 4. OUTSIDE (x >= x_out)
         else {
-            // Calculate Total Mass of the void structure
-            // 1. Inner total
-            float M_core = 0.5 * d_in * x_core * x_core;
-            float M_base = 0.5 * d_in * (1.0 - x_core * x_core);
-            float v_full = 0.9;
-            float M_rise = k * ( (v_full*v_full*v_full*v_full)*0.25 + x_core * (v_full*v_full*v_full)*(1.0/3.0) );
-            float M_inner_total = M_core + M_base + M_rise;
+            // A. Inner Total
+            float m_core = 0.5 * d_in * x_core * x_core;
+            float m_base_full = 0.5 * d_in * (1.0 - x_core * x_core);
+            float diff = d_wall - d_in;
+            float span = 1.0 - x_core;
+            float scale = 1.0 / (span * span);
+            float v_full = span;
+            float term_full = (v_full*v_full*v_full*v_full)*0.25 + x_core*(v_full*v_full*v_full)*(1.0/3.0);
+            float m_rise_full = diff * scale * term_full;
+            float M_inner = m_core + m_base_full + m_rise_full;
 
-            // 2. Ridge total (Integrated fully to 1.05)
-            float val_at_end = 0.525 * 1.05 * 1.05 - (1.05 * 1.05 * 1.05) / 3.0;
-            float val_at_1   = 0.525 - 1.0 / 3.0;
-            float M_ridge_total = val_at_end - val_at_1;
+            // B. Wall Total (q=1.0)
+            float t1 = 1.0;
+            float t2 = (0.5 * w - 1.0);
+            float t3 = (1.0/3.0 - (2.0/3.0)*w);
+            float t4 = 0.25 * w;
 
-            return lensing_strength * (M_inner_total + M_ridge_total) / x;
+            float m_wall_total = d_wall * w * (t1 + t2 + t3 + t4);
+
+            mass = M_inner + m_wall_total;
         }
+
+        return lensing_strength * mass / x;
     }
 
     vec3 palette(float t) {
@@ -188,26 +234,47 @@ const fragmentShader = `
 
             // Calculate deflection angle based on chosen model
             if (u_model < 0.5) {
-                // Point Mass (1/r)
+                // 0: Point Mass
                 float lensStrength = baseStrength * depth;
                 deflection = normalize(distVec) * lensStrength / (r + 0.005);
-            } else if (u_model < 1.5) {
-                // NFW Halo
+            }
+            else if (u_model < 1.5) {
+                // 1: NFW Halo (Using improved function)
                 float nfwStrength = baseStrength * depth * 6.0;
                 float rs = max(u_spread * 0.24, 0.01);
                 float x = r / rs;
-                float alpha = nfw_enclosed(x);
+                // Use the new stable function
+                float alpha = nfw_deflection(x);
                 deflection = normalize(distVec) * nfwStrength * alpha;
-            } else {
-                // Void Model
+            }
+            else if (u_model < 2.5) {
+                // 2: Void Toy Model
                 float rv = max(u_spread * 0.24, 0.01);
-                // u_mass is passed as raw slider value scaled 0-2 (0-200%).
-                // We interpret u_mass as the inner density ratio here.
+
+                // Map slider (0-2) to density contrast (-1 to +1).
+                // We allow d_in to be positive. The integral handles it correctly.
                 float d_in = u_mass - 1.0;
-                float alpha = void_deflection(r, rv, d_in);
-                // Visual scaling to match user request for "slightly stronger" effect
+
+                float alpha = void_toy_deflection(r, rv, d_in, u_wall_density, u_wall_width);
                 float voidStrength = 0.15 * depth;
                 deflection = normalize(distVec) * voidStrength * alpha;
+            }
+            else {
+                // 3: HSW Void (Texture Lookup)
+                float rv = max(u_spread * 0.24, 0.01);
+                float max_r = 20.0 * rv;
+                float tex_coord = r / max_r;
+
+                float alpha = 0.0;
+                if (tex_coord <= 1.0) {
+                    // Texture stores absolute value.
+                    // Multiply by -1.0 to restore negative mass (diverging void).
+                    alpha = -1.0 * texture2D(u_hsw_tex, vec2(tex_coord, 0.5)).r;
+                }
+
+                // HSW visual strength multiplier
+                float hswStrength = 0.33 * depth;
+                deflection = normalize(distVec) * hswStrength * alpha;
             }
 
             // Apply Parallax and Lensing Deflection
@@ -267,6 +334,15 @@ const fragmentShader = `
                 if (abs(rot.y) < thickness && abs(rot.x) < size) cross = 1.0;
 
                 finalColor = mix(finalColor, outlineColor, cross);
+
+                // Show Outer Wall Edge for Toy Model
+                if (u_model > 1.5 && u_model < 2.5) {
+                    float r_outer = rv * (1.0 + u_wall_width);
+                    float distOut = abs(r - r_outer);
+                    float outline2 = smoothstep(0.002, 0.0, distOut);
+                    vec3 wallColor = vec3(0.3, 0.5, 0.8);
+                    finalColor = mix(finalColor, wallColor, outline2 * 0.5);
+                }
             }
         }
 
