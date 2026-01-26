@@ -83,12 +83,16 @@ self.addEventListener('fetch', (event) => {
 
                         return response;
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.error('Service worker fetch failed; providing offline fallback if possible.', error);
                         // Return offline fallback for navigation requests
                         if (event.request.mode === 'navigate') {
                             return caches.match('./index.html');
                         }
-                        return null;
+                        return new Response('You are offline and the requested resource is not available in the cache.', {
+                            status: 503,
+                            headers: { 'Content-Type': 'text/plain' }
+                        });
                     });
             })
     );
