@@ -18,8 +18,10 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Physics Models:**
     * **Point Mass:** Simulates a simple, singular dense mass (potential $\propto 1/r$).
     * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing the realistic mass distribution of galaxy clusters.
-    * **Voids:** Simulates a cosmic void with an approximated matter profile, representing a simplified HSW profile.
+    * **Void Toy Model:** Simulates a simple cosmic void using a piecewise quadratic density profile with a dense ridge.
+    * **HSW Void:** Simulates a realistic, universal void density profile based on **[Hamaus, Sutter & Wandelt (2014)](https://arxiv.org/abs/1403.5499)**, featuring adjustable inner/outer slopes and scale radius.
 * **Multi-Plane Lensing:** Simulates depth by treating the background as multiple distinct layers, creating parallax effects and varying distortion based on distance.
+* **Mass Distribution Plot:** Real-time 1D plot of the density profile $\delta(r)$ allows users to visualize the exact structure of the lens being simulated.
 
 ### Rendering & Procedural Generation
 * **Procedural Universe:** Background galaxies and the foreground cluster/void are generated procedurally using seeded random numbers. Every "Reshuffle" creates a unique, consistent star field.
@@ -27,7 +29,8 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Custom Sprites:** Uses HTML5 Canvas to pre-render galaxy sprites (spirals and ellipticals) for high-performance rendering.
 
 ### Interactivity
-* **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time, as well as Void Inner Density and Void Size
+* **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time.
+* **Advanced Void Controls:** Fine-tune void properties including Wall Density, Wall Width, Scale Radius ($r_s$), Inner Slope ($\alpha$), and Outer Slope ($\beta$).
 * **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens. The repository contains an example image of the Hubble Ultra Deep Field for the background.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
 * **Snapshot Export:** Save high-resolution PNG snapshots of the current lensing state for presentations or wallpapers.
@@ -143,27 +146,37 @@ Assumes all mass is concentrated at a single point. Deflection decreases linearl
 ### NFW (Navarro-Frenk-White) Profile
 Modeled on the density distribution of dark matter halos as described in [Navarro, Frenk & White (1997)](https://ui.adsabs.harvard.edu/abs/1997ApJ...490..493N/abstract). It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
 
-### Void Model
+### Void Toy Model
 Simulates a cosmic void—a large under-dense region of space—bounded by a dense "wall" or ridge. Unlike the Point Mass or NFW profiles, which act purely as converging lenses, this model can simulate under-dense regions (negative convergence/repulsive lensing).
 
-The density profile $\delta(x) = \rho(x) / \bar{\rho} - 1$ (density contrast) is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is the void radius and controlled by a slider). The profile features a smooth "bucket" shape with a flat inner core and a thin outer ridge:
+The density profile $\delta(x) = \rho(x) / \bar{\rho} - 1$ (density contrast) is defined piecewise based on the normalized radius $x = r / r_v$ (where $r_v$ is the void radius). The profile features a smooth "bucket" shape with a flat inner core and an adjustable outer ridge:
 
-Void Core ($x < 0.1$):
-A central region of constant under-density: $\delta(x) = \delta_{min}$ (adjustable by slider with values in % of mean density)
+**Void Core ($x < 0.05$):**
+A central region of constant under-density: $\delta(x) = \delta_{min}$ (adjustable via the "Inner Density" slider).
 
-Void Interior ($0.1 \le x < 1.0$):
-A smooth quadratic transition that rises from the core density to the wall density.
-$\delta(x) = \delta_{min} + (\delta_{wall} - \delta_{min}) \left( \frac{x - 0.1}{0.9} \right)^2$ ; 
-$\delta_{wall}$ is fixed to 0.05
+**Void Interior ($0.05 \le x < 1.0$):**
+A smooth polynomial transition that rises from the core density $\delta_{min}$ to the peak wall density $\delta_{wall}$.
 
-Void Wall ($1.0 \le x < 1.05$):
-A thin, dense shell where the density peaks at $\delta_{wall} = 0.05$ and drops linearly to zero.
-$$\delta(x) = 1.05 - x$$
-(Matches $\delta=0.05$ at $x=1$ and $\delta=0$ at $x=1.05$)
+**Void Wall ($1.0 \le x < 1.0 + w$):**
+A dense shell where the density peaks at $\delta_{wall}$ (adjustable via "Wall Peak Density") and drops quadratically to zero over a width $w$ (adjustable via "Wall Outer Edge"):
+$$\delta(x) = \delta_{wall} \left( 1 - \frac{x - 1.0}{w} \right)^2$$
 
-Exterior ($x \ge 1.05$):
+**Exterior ($x \ge 1.0 + w$):**
 Zero density contrast (mean cosmological density).
 
+### HSW (Hamaus-Sutter-Wandelt) Profile
+Simulates a realistic "universal" void density profile as described in [Hamaus, Sutter & Wandelt (2014)](https://arxiv.org/abs/1403.5499). This empirical 4-parameter model provides a more accurate representation of voids found in N-body simulations and galaxy surveys.
+
+The density contrast is given by:
+$$\delta(r) = \delta_c \frac{1 - (r/r_s)^\alpha}{1 + (r/r_s)^\beta}$$
+
+Where:
+* $\delta_c$: Central density contrast (controlled by Mass slider)
+* $r_s$: Scale radius (controlled by Scale Radius slider)
+* $\alpha$: Inner slope, determining how steep the core is
+* $\beta$: Outer slope, determining how quickly the density returns to the cosmic mean
+
+The visualization numerically integrates this density profile to compute the lensing deflection angles in real-time.
 
 ---
 
