@@ -62,26 +62,33 @@ self.addEventListener('fetch', (event) => {
 
                 return fetch(event.request)
                     .then((response) => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            // Allow caching of CDN resources
-                            if (response && response.status === 200 && event.request.url.includes('cdnjs')) {
-                                const responseToCache = response.clone();
-                                caches.open(CACHE_NAME)
-                                    .then((cache) => {
-                                        cache.put(event.request, responseToCache);
-                                    });
-                            }
+                        if (!response) {
                             return response;
                         }
 
-                        // Clone and cache the response
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
+                        const url = event.request.url;
+                        const isCdnResource = url.includes('cdnjs');
+                        const isSuccessful = response.status === 200;
+                        const isOpaque = response.type === 'opaque';
 
+                        // Cache CDN resources explicitly, including opaque responses
+                        if (isCdnResource && (isSuccessful || isOpaque)) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                            return response;
+                        }
+
+                        // Cache successful same-origin basic responses
+                        if (response.type === 'basic' && isSuccessful) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
                         return response;
                     })
                     .catch((error) => {
