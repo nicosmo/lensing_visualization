@@ -47,7 +47,9 @@ format-check:
 icons:
 	@echo "Opening icon generator in browser..."
 	@echo "Click 'Download All' to save icons, then move them to icons/ folder"
-	@open scripts/generate-icons.html || xdg-open scripts/generate-icons.html || echo "Open scripts/generate-icons.html in your browser"
+	@command -v open >/dev/null 2>&1 && open scripts/generate-icons.html \
+		|| command -v xdg-open >/dev/null 2>&1 && xdg-open scripts/generate-icons.html \
+		|| echo "Open scripts/generate-icons.html in your browser"
 
 # Clean up
 clean:
