@@ -440,7 +440,15 @@ function setupFileUpload(config, material) {
                 LensingApp.manualLayers.push({ texture: tex, name: file.name });
                 updateLayerUI(config, material);
             };
+            img.onerror = function () {
+                console.error('Error loading image from uploaded file:', file && file.name);
+                alert('Failed to load the image. The file may be corrupted or in an unsupported format.');
+            };
             img.src = event.target.result;
+        };
+        reader.onerror = function () {
+            console.error('Error reading uploaded file:', reader.error);
+            alert('Failed to read the selected file. Please try again with a valid image file.');
         };
         reader.readAsDataURL(file);
         bgUploadInput.value = '';
