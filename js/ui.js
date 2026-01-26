@@ -422,6 +422,10 @@ function setupFileUpload(config, material) {
     bgUploadInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (!file.type || !file.type.startsWith('image/')) {
+            // Not an image file; ignore this upload
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = function (event) {
