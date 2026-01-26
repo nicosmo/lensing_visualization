@@ -100,7 +100,8 @@ function createBWGridTexture() {
  * @returns {THREE.CanvasTexture} The generated color grid texture
  */
 function createColorGridTexture() {
-    const size = 2048;
+    const isMobile = window.innerWidth < 768;
+    const size = isMobile ? 1024 : 2048;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
