@@ -9,7 +9,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 **Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW, Voids), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance.
 
-![Lensing Example Plot](lensing_example.png)
+![Lensing Example Plot](examples/lensing_example.png)
 
 ## Features
 
@@ -45,9 +45,61 @@ Since this project relies on native browser technologies (HTML5, Three.js via CD
 
 ### Running Locally
 For the best experience (and to avoid browser security restrictions with local textures), it is recommended to use a local server rather than double-clicking the HTML file:
+
 1. Open your terminal in the project folder.
-2. Run `python3 -m http.server`
-3. Open `http://localhost:8000` in your browser.
+2. Run `python3 -m http.server 8080`
+3. Open `http://localhost:8080` in your browser.
+
+---
+
+## Project Structure
+
+```
+lensing_visualization/
+├── index.html              # Main HTML file with UI structure
+├── css/
+│   └── styles.css          # All CSS styles
+├── js/
+│   ├── utils.js            # Seeded RNG & helper functions
+│   ├── galaxy-factory.js   # Galaxy sprite generation
+│   ├── textures.js         # Texture creation functions
+│   ├── shaders.js          # WebGL vertex & fragment shaders
+│   ├── ui.js               # UI controls & event handlers
+│   └── app.js              # Main application initialization
+├── examples/
+│   ├── lensing_example.png # Screenshot used in README
+│   └── Hubble_ultra_deep_field_high_rez.jpg # Sample background image
+├── package.json            # NPM dependencies & scripts
+├── .eslintrc.json          # ESLint configuration
+├── .prettierrc             # Prettier configuration
+└── .gitignore              # Git ignore rules
+```
+
+---
+
+## Development
+
+### Dependencies
+
+Development dependencies (linting & formatting):
+* [Node.js + npm](https://nodejs.org/) - Required only for the linting/formatting toolchain
+
+Install (optional) dev tooling dependencies:
+```bash
+npm install
+```
+
+### NPM Scripts (Dev Tooling)
+
+Use npm for linting and formatting tasks:
+```bash
+npm run lint        # Check for linting errors
+npm run lint:fix    # Auto-fix linting errors
+npm run format      # Format all files
+npm run format:check # Check formatting
+```
+
+---
 
 
 ## Usage
@@ -73,7 +125,7 @@ You can upload your own images to test the lensing effect:
 
 ### Included Test Data
 This repository includes a high-resolution astronomical image for testing:
-* **File:** `Hubble_ultra_deep_field_high_rez.jpg`
+* **File:** `examples/Hubble_ultra_deep_field_high_rez.jpg`
 * **Description:** A section of the Hubble Ultra-Deep Field, ideal for visualizing how a cluster/void distorts a realistic background field.
 * **Source:** Wikipedia (Accessed Dec 17, 2025).
 
