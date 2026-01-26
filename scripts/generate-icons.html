@@ -138,17 +138,33 @@
             });
         }
 
+        async function waitForAllIcons(timeoutMs = 5000, intervalMs = 100) {
+            const start = Date.now();
+            while (Object.keys(generatedIcons).length < sizes.length) {
+                if (Date.now() - start >= timeoutMs) {
+                    break;
+                }
+                await new Promise(r => setTimeout(r, intervalMs));
+            }
+        }
+
         async function downloadAll() {
             if (Object.keys(generatedIcons).length === 0) {
                 generateAll();
-                await new Promise(r => setTimeout(r, 500));
             }
+
+            await waitForAllIcons();
             
             // Simple approach: download each file
             for (const size of sizes) {
+                const dataUrl = generatedIcons[size];
+                if (!dataUrl) {
+                    console.warn(`Icon for size ${size}x${size} not generated; skipping download.`);
+                    continue;
+                }
                 const link = document.createElement('a');
                 link.download = `icon-${size}x${size}.png`;
-                link.href = generatedIcons[size];
+                link.href = dataUrl;
                 link.click();
                 await new Promise(r => setTimeout(r, 100));
             }
