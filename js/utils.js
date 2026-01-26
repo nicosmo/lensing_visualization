@@ -6,7 +6,6 @@
 // --- Seeded Random Number Generator ---
 // A seeded RNG is used so that the "Reshuffle" feature generates a consistent
 // galaxy field for a specific seed, allowing for reproducible visuals during a session.
-// eslint-disable-next-line no-param-reassign
 function mulberry32(seed) {
     let a = seed;
     return function () {
