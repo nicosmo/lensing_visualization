@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lensing-viz-v1';
+const CACHE_NAME = 'lensing-viz-v1.1';
 const ASSETS_TO_CACHE = [
     './index.html',
     './css/styles.css',
