@@ -54,49 +54,35 @@ self.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(
-        caches.match(event.request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse;
+        fetch(event.request)
+            .then((networkResponse) => {
+                // 1. Network Succeeded:
+                // Check if we received a valid response
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
                 }
 
-                return fetch(event.request)
-                    .then((response) => {
-                        const url = event.request.url;
-                        const isCdnResource = url.includes('cdnjs');
-                        const isSuccessful = response.status === 200;
-                        const isOpaque = response.type === 'opaque';
+                // 2. Update the cache with the new file
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
 
-                        // Cache CDN resources explicitly, including opaque responses
-                        if (isCdnResource && (isSuccessful || isOpaque)) {
-                            const responseToCache = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then((cache) => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                            return response;
+                return networkResponse;
+            })
+            .catch(() => {
+                // 3. Network Failed (Offline):
+                // Fallback to cache
+                return caches.match(event.request)
+                    .then((cachedResponse) => {
+                        if (cachedResponse) {
+                            return cachedResponse;
                         }
-
-                        // Cache successful same-origin basic responses
-                        if (response.type === 'basic' && isSuccessful) {
-                            const responseToCache = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then((cache) => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                        }
-                        return response;
-                    })
-                    .catch((error) => {
-                        console.error('Service worker fetch failed; providing offline fallback if possible.', error);
-                        // Return offline fallback for navigation requests
+                        // Optional: Return a specific offline page if the file isn't found
                         if (event.request.mode === 'navigate') {
                             return caches.match('./index.html');
                         }
-                        return new Response('You are offline and the requested resource is not available in the cache.', {
-                            status: 503,
-                            headers: { 'Content-Type': 'text/plain' }
-                        });
                     });
             })
     );
