@@ -263,10 +263,10 @@ function drawMassPlot(config, canvas) {
     // --- 4. Draw Labels ---
     ctx.fillStyle = '#aaa';
     ctx.font = '10px sans-serif';
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'right';
 
     // Main Title
-    ctx.fillText('Density (δ) vs Radius', 6, 12);
+    ctx.fillText('Density (δ) vs Radius', w - 6, 12);
 
     // Context-Sensitive Labels for the Vertical Marker
     let markerLabel = 'Void Radius'; // Default for Toy (2) & HSW (3)
@@ -279,7 +279,7 @@ function drawMassPlot(config, canvas) {
     // Horizontal Axis Label (Mean Density) - positioned above the line
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText('Mean Density', 2, yZero - 4);
+    ctx.fillText('Mean Density', 2, yZero + 12);
 }
 
 
@@ -450,8 +450,15 @@ function setModel(modelIndex, config) {
     groupHswB.style.display = 'none';
     hswLink.style.display = 'none';
 
-    if (modelIndex === 0) groupPlot.style.display = 'none';
-    else groupPlot.style.display = 'block';
+    if (modelIndex === 0) {
+        groupPlot.style.display = 'none';
+    } else {
+        groupPlot.style.display = 'block';
+        // Ensure the container is visible if the box is checked
+        if (plotCheck.checked) {
+            plotContainer.style.display = 'block';
+        }
+    }
 
     if (modelIndex === 2) { // Toy Model
         massLabel.firstChild.textContent = 'Inner Density (% Mean)';
