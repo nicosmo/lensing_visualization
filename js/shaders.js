@@ -225,10 +225,20 @@ const fragmentShader = `
         for (float i = 0.0; i < 8.0; i++) {
             if (i >= u_layers) break;
 
-            float decay = 1.0 / (1.0 + i * 0.4);
-            float layerBrightness = u_brightness * decay;
+            // --- REALISTIC DISTANCE SCALING ---
+            // Normalized distances: Lens at 1.0, First layer at 1.4, Step 0.4
+            float d_lens = 1.0;
+            float d_source = 1.4 + (i * 0.4);
 
-            float depth = 1.0 - (i * 0.12);
+            // Geometric Lensing Efficiency: 1 - (D_lens / D_source)
+            float efficiency = 1.0 - (d_lens / d_source);
+
+            // Scale strength to be visually punchy
+            float depth = efficiency * 2.5;
+
+            // Brightness decay (Parallax dimming)
+            float decay = 1.0 / (1.0 + i * 0.3);
+            float layerBrightness = u_brightness * decay;
 
             vec2 deflection;
 
