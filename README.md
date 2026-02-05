@@ -139,7 +139,6 @@ This repository includes a high-resolution astronomical image for testing:
 The simulation calculates the deflection angle $\vec{\alpha}$ of light rays as they pass near the lens.
 
 
-
 ### Point Mass Model
 Assumes all mass is concentrated at a single point. Deflection decreases linearly with distance ($1/r$). This creates a sharp "Einstein Ring" but theoretically infinite deflection at the center.
 
@@ -177,6 +176,18 @@ Where:
 * $\beta$: Outer slope, determining how quickly the density returns to the cosmic mean
 
 The visualization numerically integrates this density profile to compute the lensing deflection angles in real-time.
+
+
+
+### Geometric Lensing Efficiency
+The visualization uses a simplified geometric lensing efficiency term under normalized Euclidean distance assumptions:
+
+$$\text{Efficiency} = \frac{D_{LS}}{D_S} \approx \frac{d_{\text{source}} - d_{\text{lens}}}{d_{\text{source}}} = 1 - \frac{d_{\text{lens}}}{d_{\text{source}}}$$
+
+This heuristic mimics the qualitative behavior of the physical lensing distance ratio $D_{LS}/D_S$, producing a visually plausible increase in distortion strength for sources placed farther behind the lens. It is intended for depth-scaled rendering rather than a full cosmological treatment of distances.
+
+
+
 
 ---
 
