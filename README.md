@@ -197,7 +197,7 @@ This heuristic mimics the qualitative behavior of the physical lensing distance 
 * **Library:** Built with [Three.js](https://threejs.org/)
 * **Test Image:** NASA/ESA (Hubble Ultra-Deep Field)
 
-The authors of this code thank Dennis Frei for his valuable contributions to the development of the code, as well as Simon Bouchard, Nico Hamaus, Wei Liu, Alice Pisani, Lucas Sauniere, and Georgios Valogiannis for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project. NS is supported by the French government’s France 2030 investment plan (A*MIDEX AMX-22-CEI-03).
+The authors of this code thank Dennis Frei for his valuable contributions to the development of the code, as well as Simon Bouchard, Nico Hamaus, Wei Liu, Alice Pisani, Lucas Sauniere, Georgios Valogiannis and Julien Zoubian for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project. NS is supported by the French government’s France 2030 investment plan (A*MIDEX AMX-22-CEI-03).
 
 ## License
 
