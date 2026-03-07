@@ -28,8 +28,12 @@
 
         <style>
             .model-options {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .model-row {
+                display: flex;
                 gap: 4px;
             }
 
@@ -78,7 +82,7 @@
 
             <div class="control-content">
                 <p>
-                    Interactive visualization of a massive cluster or a cosmic void bending light from background layers. A qualitative
+                    Interactive visualization of a massive cluster or a cosmic void bending light from background layers. A qualitative and exagerated
                     representation of lensing effects.
                 </p>
                 <p id="credit-text" class="credit-text">Concept & Visualization by Nico Schuster and Andres Salcedo</p>
@@ -94,10 +98,15 @@
                 <div class="control-group">
                     <label>Physics Model</label>
                     <div class="model-options">
-                        <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
-                        <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
-                        <button class="model-btn" id="btn-model-void" data-model="2">Void Toy Model</button>
-                        <button class="model-btn" id="btn-model-hsw" data-model="3">HSW Void</button>
+                        <div class="model-row">
+                            <button class="model-btn active" id="btn-model-point" data-model="0">Point Mass</button>
+                            <button class="model-btn" id="btn-model-nfw" data-model="1">NFW Halo</button>
+                            <button class="model-btn" id="btn-model-elliptical" data-model="4">Elliptical Halo</button>
+                        </div>
+                        <div class="model-row">
+                            <button class="model-btn" id="btn-model-void" data-model="2">Void Toy Model</button>
+                            <button class="model-btn" id="btn-model-hsw" data-model="3">HSW Void</button>
+                        </div>
                     </div>
                     <div id="hsw-link" class="paper-link">
                         <a href="https://arxiv.org/abs/1403.5499" target="_blank">View HSW Paper (arXiv:1403.5499) ↗</a>
@@ -137,6 +146,22 @@
                         <span id="spread-val" class="value-display">1.00x</span>
                     </label>
                     <input type="range" id="spread-slider" min="0" max="200" value="100" />
+                </div>
+
+                <div class="control-group" id="group-ellipticity" style="display:none;">
+                    <label>
+                        Ellipticity (q = 1 - e)
+                        <span id="ellipticity-val" class="value-display">0.30</span>
+                    </label>
+                    <input type="range" id="ellipticity-slider" min="0" max="80" value="30" />
+                </div>
+
+                <div class="control-group" id="group-angle" style="display:none;">
+                    <label>
+                        Position Angle (deg)
+                        <span id="angle-val" class="value-display">45</span>
+                    </label>
+                    <input type="range" id="angle-slider" min="0" max="180" value="45" />
                 </div>
 
                 <div class="control-group" id="group-wall-density" style="display:none;">
@@ -201,6 +226,16 @@
                         <span id="bright-val" class="value-display">100%</span>
                     </label>
                     <input type="range" id="bright-slider" min="0" max="200" value="100" />
+                </div>
+
+                <div class="control-group" id="group-caustics" style="display:none;">
+                    <label>
+                        Show Caustic Lines
+                        <input type="checkbox" id="caustic-check" />
+                    </label>
+                    <div style="font-size: 0.65rem; text-align: right; margin-top: 6px; opacity: 0.85;">
+                        Based on <a href="https://github.com/lenstronomy/lenstronomy" target="_blank" style="color: #7affb5; text-decoration: none; border-bottom: 1px dashed #7affb5;">GitHub:lenstronomy</a>
+                    </div>
                 </div>
 
                 <div class="control-group">
