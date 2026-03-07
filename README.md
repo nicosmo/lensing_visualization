@@ -1,13 +1,21 @@
 # Visualizing Gravitational Lensing
 
 
-[**🔴 Live Demo**](https://nicosmo.github.io/lensing_visualization/)
+[** Live Demo**](https://nicosmo.github.io/lensing_visualization/)
 
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
 An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster or void (the "lens"), allowing users to toggle between different physics models and background sources.
 
-**Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW halos, HSW Voids, as well as toy models), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance.
+
+**Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW halos, HSW Voids, as well as toy models), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance. The gravitational lensing effects are amplified and exaggerated to aid visual clarity. In reality, weak lensing distortions of individual galaxies are typically on the order of $1\%$ (e.g., [Weinberg et al.,2013](https://ui.adsabs.harvard.edu/abs/2013PhR...530...87W/abstract)).
+
+## Contributing & Feedback
+Contributions, feature suggestions, and bug reports are highly welcome! 
+* If you have an idea or found an issue, please open an issue on GitHub.
+* If you'd like to contribute code, feel free to fork the repository and submit a Pull Request.
+
+
 
 ![Lensing Example Plot](examples/lensing_example.png)
 
@@ -19,6 +27,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
     * **Point Mass:** Simulates a simple, singular dense mass (potential $\propto 1/r$).
     * **NFW Halo:** Simulates a **Navarro-Frenk-White** dark matter profile, representing the realistic mass distribution of galaxy clusters.
     * **Void Toy Model:** Simulates a simple cosmic void using a piecewise quadratic density profile with a dense ridge.
+    * **Elliptical Halo:** Simulates a Non-Singular Isothermal Ellipsoid matter profile, including caustics.
     * **HSW Void:** Simulates a realistic, universal void density profile based on **[Hamaus, Sutter & Wandelt (2014)](https://arxiv.org/abs/1403.5499)**, featuring adjustable inner/outer slopes and scale radius.
 * **Multi-Plane Lensing:** Simulates depth by treating the background as multiple distinct layers, creating parallax effects and varying distortion based on distance.
 * **Mass Distribution Plot:** Real-time 1D plot of the density profile $\delta(r)$ allows users to visualize the exact structure of the lens being simulated.
@@ -35,6 +44,11 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
 * **Snapshot Export:** Save high-resolution PNG snapshots of the current lensing state for presentations or wallpapers.
 * **Reshuffling:** Instantly generate a new random seed to create a completely unique background galaxy field.
+
+### Cross-Platform & Mobile
+* **Mobile/Touch Support:** Fully supports mobile and tablet browsers. Drag with your finger to smoothly reposition the lens, and tap to lock or unlock the coordinates.
+* **Offline Access (PWA):** Built as a Progressive Web App. You can install the visualization directly to your desktop or mobile home screen to run it natively without an internet connection.
+
 
 ---
 
@@ -145,6 +159,13 @@ Assumes all mass is concentrated at a single point. Deflection decreases linearl
 ### NFW (Navarro-Frenk-White) Profile
 Modeled on the density distribution of dark matter halos as described in [Navarro, Frenk & White (1997)](https://ui.adsabs.harvard.edu/abs/1997ApJ...490..493N/abstract). It provides a "softer" core than a point mass, meaning the lensing effect does not approach infinity at the center. This creates the more complex, realistic distortions typical of massive galaxy clusters.
 
+### Elliptical Halo (NIE)
+Simulates a Non-Singular Isothermal Ellipsoid (NIE) based on [Kormann et al. (1994)](https://ui.adsabs.harvard.edu/abs/1994A%26A...284..285K/abstract). Unlike the other symmetric models, this introduces ellipticity and orientation, allowing for the visualization of complex tangential and radial caustic curves using a real-time Marching Squares algorithm. For this model, the visualization can dynamically overlay Critical Curves (on the lens plane) and Caustics (on the source plane). Light sources crossing a caustic undergo extreme magnification and split into multiple images. The caustic networks are rendered in real-time using a 2D Marching Squares algorithm to trace the zero-contours of the inverse magnification Jacobian.
+
+
+
+
+
 ### Void Toy Model
 Simulates a cosmic void—a large under-dense region of space—bounded by a dense "wall" or ridge. Unlike the Point Mass or NFW profiles, which act purely as converging lenses, this model can simulate under-dense regions (negative convergence/repulsive lensing).
 
@@ -188,7 +209,6 @@ This heuristic mimics the qualitative behavior of the physical lensing distance 
 
 
 
-
 ---
 
 ## Credits
@@ -197,7 +217,10 @@ This heuristic mimics the qualitative behavior of the physical lensing distance 
 * **Library:** Built with [Three.js](https://threejs.org/)
 * **Test Image:** NASA/ESA (Hubble Ultra-Deep Field)
 
-The authors of this code thank Dennis Frei for his valuable contributions to the development of the code, as well as Simon Bouchard, Nico Hamaus, Wei Liu, Alice Pisani, Lucas Sauniere, Georgios Valogiannis and Julien Zoubian for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project. NS is supported by the French government’s France 2030 investment plan (A*MIDEX AMX-22-CEI-03).
+The authors of this code thank Dennis Frei for his valuable contributions to the development of the code, as well as Pierre Boccard, Simon Bouchard, Nico Hamaus, Wei Liu, Alice Pisani, Lucas Sauniere, Georgios Valogiannis, and Julien Zoubian for useful discussions. Nico Schuster would like to thank Tim Eifler, Elisabeth Krause, and Enrique Paillas for their hospitality at the CosmoLab of the University of Arizona, which facilitated the discussions that led to this project. NS is supported by the French government’s France 2030 investment plan (A*MIDEX AMX-22-CEI-03).
+
+The algorithm used to compute and render the caustic and critical curves is built on formalisms from the [lenstronomy](https://github.com/lenstronomy/lenstronomy) Python package, based on [Birrer et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015ApJ...813..102B/abstract), [Birrer & Amara (2018)](https://ui.adsabs.harvard.edu/abs/2018PDU....22..189B/abstract), and [Birrer et al. (2021)](https://joss.theoj.org/papers/10.21105/joss.03283).
+
 
 ## License
 
