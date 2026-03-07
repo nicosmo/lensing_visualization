@@ -58,6 +58,7 @@ function initUIElements() {
     plotCheck = document.getElementById('plot-check');
     fgCheck = document.getElementById('fg-check');
     clusterCheck = document.getElementById('cluster-check');
+    causticCheck = document.getElementById('caustic-check');
 
     massLabel = document.getElementById('mass-label');
     spreadLabel = document.getElementById('spread-label');
@@ -82,6 +83,9 @@ function initUIElements() {
     plotCanvas = document.getElementById('mass-plot');
     hswLink = document.getElementById('hsw-link');
     btnHSW = document.getElementById('btn-model-hsw'); // Added HSW button
+    btnElliptical = document.getElementById('btn-model-elliptical');
+    ellipticitySlider = document.getElementById('ellipticity-slider');
+    angleSlider = document.getElementById('angle-slider');
 }
 
 /**
@@ -227,6 +231,9 @@ function drawMassPlot(config, canvas) {
         if (config.model === 1) { // NFW
             let x = Math.max(rNorm, 0.02);
             val = 0.15 / (x * (1.0+x) * (1.0+x));
+        } else if (config.model === 4) { // Elliptical Halo
+            let s = Math.max(config.spread, 0.05);
+            val = 0.15 * s / (s*s + rNorm*rNorm);
         } else if (config.model === 2) { // Toy Void
             const din = config.mass - 1.0;
             const dwall = config.wallDensity;
@@ -295,7 +302,14 @@ function setupSliders(config, material) {
     };
 
     massSlider.addEventListener('input', (e) => {
-        config.mass = e.target.value / 100;
+        const val = e.target.value / 100;
+
+        // Apply 0.75 scale only for Elliptical model (Model 4)
+        if (config.model === 4) {
+            config.mass = val * 0.75;
+        } else {
+            config.mass = val;
+        }
 
         // For HSW, link mass slider to delta_c
         if (config.model === 3) {
@@ -307,7 +321,15 @@ function setupSliders(config, material) {
     });
 
     spreadSlider.addEventListener('input', (e) => {
-        config.spread = e.target.value / 100;
+        const val = e.target.value / 100;
+
+        // Apply 0.50 scale only for Elliptical model (Model 4)
+        if (config.model === 4) {
+            config.spread = val * 0.50;
+        } else {
+            config.spread = val;
+        }
+
         document.getElementById('spread-val').innerText = `${(e.target.value / 100).toFixed(2)}x`;
         updateAll();
     });
@@ -343,6 +365,19 @@ function setupSliders(config, material) {
     hswBetaSlider.addEventListener('input', (e) => {
         config.hswBeta = e.target.value / 10.0;
         document.getElementById('hsw-beta-val').innerText = config.hswBeta.toFixed(1);
+        updateAll();
+    });
+
+    // --- Elliptical Sliders ---
+    ellipticitySlider.addEventListener('input', (e) => {
+        config.ellipticity = e.target.value / 100.0;
+        document.getElementById('ellipticity-val').innerText = config.ellipticity.toFixed(2);
+        updateAll();
+    });
+
+    angleSlider.addEventListener('input', (e) => {
+        config.angle = parseFloat(e.target.value);
+        document.getElementById('angle-val').innerText = config.angle.toFixed(0);
         updateAll();
     });
 
@@ -414,6 +449,10 @@ function setupCheckboxes(config) {
     clusterCheck.addEventListener('change', (e) => {
         config.showCluster = e.target.checked ? 1.0 : 0.0;
     });
+
+    causticCheck.addEventListener('change', (e) => {
+        config.showCaustics = e.target.checked ? 1.0 : 0.0;
+    });
 }
 
 /**
@@ -433,6 +472,7 @@ function setModel(modelIndex, config) {
     else if (modelIndex === 1) btnNFW.classList.add('active');
     else if (modelIndex === 2) btnVoid.classList.add('active');
     else if (modelIndex === 3) btnHSW.classList.add('active');
+    else if (modelIndex === 4) btnElliptical.classList.add('active');
 
     // --- UI Visibility ---
     const groupWallD = document.getElementById('group-wall-density');
@@ -441,6 +481,9 @@ function setModel(modelIndex, config) {
     const groupHswA = document.getElementById('group-hsw-alpha');
     const groupHswB = document.getElementById('group-hsw-beta');
     const groupPlot = document.getElementById('group-plot-toggle');
+    const groupEllipticity = document.getElementById('group-ellipticity');
+    const groupAngle = document.getElementById('group-angle');
+    const groupCaustics = document.getElementById('group-caustics');
 
     // Reset visibility
     groupWallD.style.display = 'none';
@@ -449,6 +492,9 @@ function setModel(modelIndex, config) {
     groupHswA.style.display = 'none';
     groupHswB.style.display = 'none';
     hswLink.style.display = 'none';
+    groupEllipticity.style.display = 'none';
+    groupAngle.style.display = 'none';
+    groupCaustics.style.display = 'none';
 
     if (modelIndex === 0) {
         groupPlot.style.display = 'none';
@@ -506,6 +552,31 @@ function setModel(modelIndex, config) {
         document.getElementById('hsw-beta-val').innerText = '15.0';
 
         updateHSWLookup(config);
+
+    } else if (modelIndex === 4) { // Elliptical Halo
+        massLabel.firstChild.textContent = 'Cluster Mass';
+        spreadLabel.firstChild.textContent = 'Core Radius';
+        coreLabel.childNodes[0].textContent = 'Show Dark Matter Halo ';
+
+        groupEllipticity.style.display = 'block';
+        groupAngle.style.display = 'block';
+        groupCaustics.style.display = 'block';
+
+        config.mass = 0.75;
+        massSlider.value = 100;
+        document.getElementById('mass-val').innerText = '100%';
+
+        config.spread = 0.50;
+        spreadSlider.value = 100;
+        document.getElementById('spread-val').innerText = '1.00x';
+
+        config.ellipticity = 0.25;
+        ellipticitySlider.value = 25;
+        document.getElementById('ellipticity-val').innerText = '0.25';
+
+        config.angle = 0;
+        angleSlider.value = 0;
+        document.getElementById('angle-val').innerText = '0';
 
     } else { // Point or NFW
         massLabel.firstChild.textContent = 'Cluster Mass';
@@ -830,6 +901,8 @@ function setupResetButton(config, defaultConfig, material) {
         document.getElementById('bright-val').innerText = '100%';
 
         coreCheck.checked = true;
+        causticCheck.checked = false;
+        config.showCaustics = 0.0;
 
         if (fgCheck) {
             fgCheck.checked = true;

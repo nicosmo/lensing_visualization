@@ -10,7 +10,7 @@ const vertexShader = `
     varying vec2 vUv;
     void main() {
         vUv = uv;
-        gl_Position = vec4(position, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
 `;
 
@@ -48,10 +48,38 @@ const fragmentShader = `
     uniform float u_wall_density; // Peak density of wall
     uniform float u_wall_width;   // Width of wall (outer edge - 1.0)
 
+    // Elliptical Model
+    uniform float u_ellipticity;
+    uniform float u_angle;
+
     // HSW Model Texture
     uniform sampler2D u_hsw_tex;  // Lookup table for HSW deflection
 
     varying vec2 vUv;
+
+    // --- Elliptical Halo (NIE) Deflection ---
+    // Real-valued analytical solution for Cored Isothermal Ellipsoid (Kormann 1994)
+    vec2 nie_deflection(vec2 r, float b, float s, float q, float angle) {
+        float c = cos(angle);
+        float sn = sin(angle);
+        vec2 rotR = vec2(c * r.x + sn * r.y, -sn * r.x + c * r.y);
+
+        float x = rotR.x;
+        float y = rotR.y;
+
+        float safeQ = clamp(q, 0.01, 0.999);
+        float f = sqrt(1.0 - safeQ * safeQ);
+
+        float delta = sqrt(safeQ * safeQ * (s * s + x * x) + y * y);
+        float prefac = (b * safeQ) / f;
+
+        float ax = prefac * atan((x * f) / (delta + s));
+        float arg = clamp((y * f) / (delta + s * safeQ * safeQ), -0.999, 0.999);
+        float ay = prefac * (0.5 * log((1.0 + arg) / (1.0 - arg)));
+
+        vec2 alpha = vec2(ax, ay);
+        return vec2(c * alpha.x - sn * alpha.y, sn * alpha.x + c * alpha.y);
+    }
 
     // --- NFW Deflection Angle (Improved Stability) ---
     // x: r / rs (radius scaled by scale radius)
@@ -269,11 +297,12 @@ const fragmentShader = `
                 float voidStrength = 0.15 * depth;
                 deflection = normalize(distVec) * voidStrength * alpha;
             }
-            else {
+            else if (u_model < 3.5) {
                 // 3: HSW Void (Texture Lookup)
                 float rv = max(u_spread * 0.24, 0.01);
                 float max_r = 20.0 * rv;
-                float tex_coord = r / max_r;
+                // Shift to pixel center and clamp to [0, 1] range to avoid edge artifacts
+                float tex_coord = clamp((r / max_r) + (0.5 / 8192.0), 0.0, 1.0);
 
                 float alpha = 0.0;
                 if (tex_coord <= 1.0) {
@@ -285,6 +314,18 @@ const fragmentShader = `
                 // HSW visual strength multiplier
                 float hswStrength = 0.33 * depth;
                 deflection = normalize(distVec) * hswStrength * alpha;
+            }
+            else {
+                // 4: Elliptical Halo (NIE), based on R. Kormann et al. 1994 'Isothermal elliptical gravitational lens models'
+                float b = baseStrength * depth * 8.0;
+                float s_avg = max(u_spread * 0.1, 0.005);
+                float q = 1.0 - u_ellipticity;
+
+                // Scale the minor axis by sqrt(q) to preserve the average core area
+                float s = s_avg * sqrt(q);
+                float theta = u_angle * 3.14159 / 180.0;
+
+                deflection = nie_deflection(distVec, b, s, q, theta);
             }
 
             // Apply Parallax and Lensing Deflection
@@ -298,6 +339,7 @@ const fragmentShader = `
             } else {
                 texColor = texture2D(u_bg, layerUv).rgb;
             }
+
 
             // Debug Grid Coloring
             if (u_grid_mode > 0.5 && u_use_manual < 0.5) {
@@ -313,10 +355,19 @@ const fragmentShader = `
 
         // Render the Dark Matter Halo Glow (if enabled)
         if (u_show_core > 0.5) {
-            if (u_model < 1.5) {
+            if (u_model < 1.5 || u_model > 3.5) {
                 // Standard Cluster Halo
-                float haloSize = (u_model > 0.5) ? max(u_spread * 0.2, 0.05) : u_mass * 0.1;
-                float halo = smoothstep(haloSize, 0.0, r);
+                float eff_r = r;
+                if (u_model > 3.5) {
+                    float c = cos(u_angle * 3.14159 / 180.0);
+                    float sn = sin(u_angle * 3.14159 / 180.0);
+                    vec2 rotR = vec2(c * distVec.x + sn * distVec.y, -sn * distVec.x + c * distVec.y);
+                    float q = clamp(1.0 - u_ellipticity, 0.1, 1.0);
+
+                    eff_r = sqrt(q * rotR.x*rotR.x + (1.0/q) * rotR.y*rotR.y);
+                }
+                float haloSize = (u_model > 0.5 && u_model < 1.5 || u_model > 3.5) ? max(u_spread * 0.2, 0.05) : u_mass * 0.1;
+                float halo = smoothstep(haloSize, 0.0, eff_r);
                 vec3 haloColor = vec3(0.1, 0.12, 0.2) + vec3(0.4, 0.35, 0.3) * halo;
                 finalColor += halo * haloColor * 0.3;
             } else {
@@ -358,7 +409,7 @@ const fragmentShader = `
 
         // Render the Foreground Cluster (The Lens Object)
         // Only visible if NOT in Void mode
-        if (u_model < 1.5 && u_show_cluster > 0.5) {
+        if ((u_model < 1.5 || u_model > 3.5) && u_show_cluster > 0.5) {
             vec2 memberUvCenter = uv - u_mouse;
             memberUvCenter.x *= aspect;
             vec2 memberUv = memberUvCenter / (u_spread * 0.24) + 0.5;

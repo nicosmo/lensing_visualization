@@ -26,6 +26,7 @@ const LensingApp = {
         showCore: 1.0,
         showForeground: 1.0,
         showCluster: 1.0,
+        showCaustics: 0.0,
         model: 0,
 
         // Toy Model Defaults
@@ -36,7 +37,11 @@ const LensingApp = {
         hswDeltac: -0.8,
         hswRs: 0.9,
         hswAlpha: 4.0,
-        hswBeta: 15.0
+        hswBeta: 15.0,
+
+        // Elliptical Model Defaults
+        ellipticity: 0.25,
+        angle: 0.0
     },
 
     // Current Configuration (will be a copy of defaultConfig)
@@ -133,11 +138,16 @@ function init() {
         u_wall_density: { value: config.wallDensity },
         u_wall_width: { value: config.wallWidth },
 
+        // Elliptical Model Parameters
+        u_ellipticity: { value: config.ellipticity },
+        u_angle: { value: config.angle },
+
         u_layers: { value: config.layers },
         u_brightness: { value: config.brightness },
         u_show_core: { value: config.showCore },
         u_show_foreground: { value: config.showForeground },
         u_show_cluster: { value: config.showCluster },
+        u_show_caustics: { value: config.showCaustics },
         u_model: { value: config.model },
         u_grid_mode: { value: 0.0 },
         u_use_manual: { value: 0.0 },
@@ -147,11 +157,16 @@ function init() {
     LensingApp.material = new THREE.ShaderMaterial({
         uniforms,
         vertexShader: LensingShaders.vertexShader,
-        fragmentShader: LensingShaders.fragmentShader,
+        fragmentShader: LensingShaders.fragmentShader
     });
 
     LensingApp.mesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize, frustumSize), LensingApp.material);
     LensingApp.scene.add(LensingApp.mesh);
+
+    // --- CAUSTIC VECTOR GROUP ---
+    LensingApp.causticsGroup = new THREE.Group();
+    LensingApp.scene.add(LensingApp.causticsGroup);
+    LensingApp.cachedCausticParams = "";
 
     // Setup Event Listeners
     setupEventListeners();
@@ -318,6 +333,10 @@ function animate(time) {
     material.uniforms.u_wall_density.value = config.wallDensity;
     material.uniforms.u_wall_width.value = config.wallWidth;
 
+    // Pass Elliptical Model parameters
+    material.uniforms.u_ellipticity.value = config.ellipticity;
+    material.uniforms.u_angle.value = config.angle;
+
     // Handle switching between manual upload layers and procedural layers
     if (LensingApp.manualLayers.length > 1) {
         material.uniforms.u_layers.value = LensingApp.manualLayers.length;
@@ -331,7 +350,78 @@ function animate(time) {
     material.uniforms.u_show_core.value = config.showCore;
     material.uniforms.u_show_foreground.value = config.showForeground;
     material.uniforms.u_show_cluster.value = config.showCluster;
+    material.uniforms.u_show_caustics.value = config.showCaustics;
     material.uniforms.u_model.value = config.model;
+
+    // --- CPU VECTOR CAUSTICS RENDERING ---
+    if (config.showCaustics > 0.5 && config.model === 4) {
+        LensingApp.causticsGroup.visible = true;
+
+        // Hash parameters to only recalculate lines when a slider actually moves
+        const currentParams = `${config.mass}_${config.spread}_${config.ellipticity}_${config.angle}_${config.layers}_${LensingApp.manualLayers.length}_${window.innerWidth}_${window.innerHeight}`;
+
+        if (LensingApp.cachedCausticParams !== currentParams) {
+            // Properly clear old lines from memory
+            while (LensingApp.causticsGroup.children.length > 0) {
+                const child = LensingApp.causticsGroup.children[0];
+                LensingApp.causticsGroup.remove(child);
+                child.geometry.dispose();
+                child.material.dispose();
+            }
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const layers = LensingApp.manualLayers.length > 1 ? LensingApp.manualLayers.length : config.layers;
+
+            for (let i = 0; i < layers; i++) {
+                const d_lens = 1.0;
+                const d_source = 1.4 + (i * 0.4);
+                const depth = (1.0 - (d_lens / d_source)) * 2.5;
+
+                const curves = LensingUtils.generateCausticLines(config, depth, aspect);
+
+                // Hue Shifting (Gold->Red for Tangential, White->Cyan for Radial)
+                const frac = i / 7.0;
+                const colOut = new THREE.Color().lerpColors(new THREE.Color(1.0, 0.8, 0.0), new THREE.Color(0.6, 0.0, 0.0), frac);
+                const colIn = new THREE.Color().lerpColors(new THREE.Color(1.0, 1.0, 1.0), new THREE.Color(0.0, 0.7, 1.0), frac);
+
+                const createCrit = (pts, color) => {
+                    if (pts.length === 0) return;
+                    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                    const mat = new THREE.PointsMaterial({
+                        color: color, size: 2.0, sizeAttenuation: false,
+                        transparent: true, opacity: 0.8, depthTest: false, blending: THREE.AdditiveBlending
+                    });
+                    LensingApp.causticsGroup.add(new THREE.Points(geo, mat));
+                };
+
+                const createCaustic = (segs, color) => {
+                    if (segs.length === 0) return;
+                    const geo = new THREE.BufferGeometry().setFromPoints(segs);
+                    // LineSegments perfectly renders Marching Squares output without connecting stray endpoints
+                    const mat = new THREE.LineBasicMaterial({
+                        color: color, transparent: true, opacity: 1.0,
+                        depthTest: false, blending: THREE.AdditiveBlending
+                    });
+                    LensingApp.causticsGroup.add(new THREE.LineSegments(geo, mat));
+                };
+
+                // Dotted Lens-Plane Curves
+                createCrit(curves.tangCritPts, colOut);
+                createCrit(curves.radialCritPts, colIn);
+
+                // Solid Source-Plane Curves
+                createCaustic(curves.tangCausticSegs, colOut); // Inner Star
+                createCaustic(curves.radialCausticSegs, colIn); // Outer Oval
+            }
+            LensingApp.cachedCausticParams = currentParams;
+        }
+
+        // Extremely fast real-time offset based on mouse position
+        LensingApp.causticsGroup.position.x = (mouse.x - 0.5) * 2.5;
+        LensingApp.causticsGroup.position.y = (mouse.y - 0.5) * 2.5;
+    } else {
+        LensingApp.causticsGroup.visible = false;
+    }
 
     LensingApp.renderer.render(LensingApp.scene, LensingApp.camera);
 }
