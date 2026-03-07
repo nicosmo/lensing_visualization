@@ -10,14 +10,13 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 **Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW halos, HSW Voids, as well as toy models), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance. The gravitational lensing effects are amplified and exaggerated to aid visual clarity. In reality, weak lensing distortions of individual galaxies are typically on the order of $1\%$ (e.g., [Weinberg et al.,2013](https://ui.adsabs.harvard.edu/abs/2013PhR...530...87W/abstract)).
 
+![Lensing Example Plot](examples/lensing_example.png)
+
+
 ## Contributing & Feedback
 Contributions, feature suggestions, and bug reports are highly welcome! 
 * If you have an idea or found an issue, please open an issue on GitHub.
 * If you'd like to contribute code, feel free to fork the repository and submit a Pull Request.
-
-
-
-![Lensing Example Plot](examples/lensing_example.png)
 
 ## Features
 
