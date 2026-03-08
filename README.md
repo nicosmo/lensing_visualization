@@ -228,7 +228,7 @@ If you use this tool for research or education, please cite it as:
 
 ```bibtex
 @software{schuster_lensing_2026,
-  author       = {Schuster, Nico and Salcedo, Andres},
+  author       = {Schuster, Nico and Salcedo, Andres and Frei, Dennis},
   title        = {Visualizing Gravitational Lensing: v1.0.0},
   month        = mar,
   year         = 2026,
