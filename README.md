@@ -1,7 +1,8 @@
 # Visualizing Gravitational Lensing
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18914869.svg)](https://doi.org/10.5281/zenodo.18914869)
 
-[** Live Demo**](https://nicosmo.github.io/lensing_visualization/)
+[** Live Demo**](https://nicosmo.github.io/lensing_visualization/) 
 
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
@@ -220,6 +221,25 @@ The authors of this code thank Dennis Frei for his valuable contributions to the
 
 The algorithm used to compute and render the caustic and critical curves is built on formalisms from the [lenstronomy](https://github.com/lenstronomy/lenstronomy) Python package, based on [Birrer et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015ApJ...813..102B/abstract), [Birrer & Amara (2018)](https://ui.adsabs.harvard.edu/abs/2018PDU....22..189B/abstract), and [Birrer et al. (2021)](https://joss.theoj.org/papers/10.21105/joss.03283).
 
+
+## Citation
+
+If you use this tool for research or education, please cite it as:
+
+```bibtex
+@software{schuster_lensing_2026,
+  author       = {Schuster, Nico and Salcedo, Andres},
+  title        = {Visualizing Gravitational Lensing: v1.0.0},
+  month        = mar,
+  year         = 2026,
+  publisher    = {Zenodo},
+  version      = {v1.0.0},
+  doi          = {10.5281/zenodo.YOUR_DOI_HERE},
+  url          = {[https://doi.org/10.5281/zenodo.18914869](https://doi.org/10.5281/zenodo.18914869)}
+}
+```
+
+https://doi.org/10.5281/zenodo.18914869
 
 ## License
 
