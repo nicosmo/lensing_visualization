@@ -234,7 +234,7 @@ If you use this tool for research or education, please cite it as:
   year         = 2026,
   publisher    = {Zenodo},
   version      = {v1.0.0},
-  doi          = {10.5281/zenodo.YOUR_DOI_HERE},
+  doi          = {10.5281/zenodo.18914869},
   url          = {[https://doi.org/10.5281/zenodo.18914869](https://doi.org/10.5281/zenodo.18914869)}
 }
 ```
