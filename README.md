@@ -239,7 +239,7 @@ If you use this tool for research or education, please cite it as:
 }
 ```
 
-https://doi.org/10.5281/zenodo.18914869
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18914869.svg)](https://doi.org/10.5281/zenodo.18914869)
 
 ## License
 
