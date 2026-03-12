@@ -1,6 +1,7 @@
 # Visualizing Gravitational Lensing
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18914869.svg)](https://doi.org/10.5281/zenodo.18914869)
+
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18914869-blue.svg)](https://doi.org/10.5281/zenodo.18914869)
 
 [** Live Demo**](https://nicosmo.github.io/lensing_visualization/) 
 
@@ -226,6 +227,8 @@ The algorithm used to compute and render the caustic and critical curves is buil
 
 If you use this tool for research or education, please cite it as:
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18914869-blue.svg)](https://doi.org/10.5281/zenodo.18914869)
+
 ```bibtex
 @software{schuster_lensing_2026,
   author       = {Schuster, Nico and Salcedo, Andr{\'e}s N. and Frei, Dennis},
@@ -239,7 +242,6 @@ If you use this tool for research or education, please cite it as:
 }
 ```
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18914869.svg)](https://doi.org/10.5281/zenodo.18914869)
 
 ## License
 
