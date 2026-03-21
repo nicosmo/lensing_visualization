@@ -243,6 +243,10 @@ If you use this tool for research or education, please cite it as:
 }
 ```
 
+## Privacy and Analytics
+
+The GitHub Pages site for this project uses [GoatCounter](https://www.goatcounter.com/), a privacy-friendly, open-source web analytics tool. It helps see how many people are visiting the site without tracking personal data or using cookies.
+
 
 ## License
 
