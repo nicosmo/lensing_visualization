@@ -11,7 +11,7 @@
 An interactive browser-based WebGL visualization that renders real-time gravitational lensing effects. It visualizes how light from background galaxies is distorted by a massive foreground cluster or void (the "lens"), allowing users to toggle between different physics models and background sources.
 
 
-**Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW halos, HSW Voids, as well as toy models), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance. The gravitational lensing effects are amplified and exaggerated to aid visual clarity. In reality, weak lensing distortions of individual galaxies are typically on the order of $1\%$ (e.g., [Weinberg et al.,2013](https://ui.adsabs.harvard.edu/abs/2013PhR...530...87W/abstract)).
+**Note:** This tool is a qualitative visualization designed for educational illustration. While it utilizes real physical density profiles (NFW halos, HSW Voids, as well as toy models), it employs thin-lens approximations and simplified rendering to achieve real-time browser performance. The gravitational lensing effects are amplified and exaggerated to aid visual clarity. In reality, weak lensing distortions of individual galaxies are typically on the order of $1$% (e.g., [Weinberg et al.,2013](https://ui.adsabs.harvard.edu/abs/2013PhR...530...87W/abstract)).
 
 ![Lensing Example Plot](examples/lensing_example.png)
 
