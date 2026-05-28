@@ -44,6 +44,9 @@ const LensingApp = {
         angle: 0.0
     },
 
+    // Dot Grid Defaults
+    dotSize: 1.0,
+
     // Current Configuration (will be a copy of defaultConfig)
     config: null,
 };

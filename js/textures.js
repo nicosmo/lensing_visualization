@@ -145,7 +145,7 @@ function createColorGridTexture() {
  * @param {number} density - Density multiplier for dot spacing
  * @returns {THREE.CanvasTexture} The generated dotted grid texture
  */
-function createDottedGridTexture(density) {
+function createDottedGridTexture(density, dotSize = 1.0) {
     const isMobile = window.innerWidth < 768;
     const size = isMobile ? 1024 : 2048;
     const canvas = document.createElement('canvas');
@@ -170,7 +170,7 @@ function createDottedGridTexture(density) {
 
         for (let y = 0; y <= size; y += spacing) {
             ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.arc(x, y, 4 * dotSize, 0, Math.PI * 2);
             ctx.fill();
         }
     }

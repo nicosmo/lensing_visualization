@@ -27,7 +27,8 @@ let btnDotted;
 let layerList;
 let bgUploadInput;
 let uploadLabel;
-let densityLabelText;
+let dotSizeSlider;
+let groupDotSize;
 
 // UI State
 let isMin = false;
@@ -77,6 +78,9 @@ function initUIElements() {
     bgUploadInput = document.getElementById('bg-upload');
     uploadLabel = document.getElementById('upload-label');
     densityLabelText = document.getElementById('density-label-text');
+
+    dotSizeSlider = document.getElementById('dot-size-slider');
+    groupDotSize = document.getElementById('group-dot-size');
 
     // Plotting & Links
     plotContainer = document.getElementById('plot-container');
@@ -415,11 +419,25 @@ function setupSliders(config, material) {
             newBg.wrapT = THREE.RepeatWrapping;
             material.uniforms.u_bg.value = newBg;
         } else if (LensingApp.currentMode === 'dotted-grid') {
-            const newBg = LensingTextures.createDottedGridTexture(config.density);
+            const newBg = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
             newBg.wrapS = THREE.RepeatWrapping;
             newBg.wrapT = THREE.RepeatWrapping;
             material.uniforms.u_bg.value = newBg;
         }
+    });
+
+    dotSizeSlider.addEventListener('change', (e) => {
+        config.dotSize = e.target.value / 100;
+        if (LensingApp.currentMode === 'dotted-grid') {
+            const newBg = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
+            newBg.wrapS = THREE.RepeatWrapping;
+            newBg.wrapT = THREE.RepeatWrapping;
+            material.uniforms.u_bg.value = newBg;
+        }
+    });
+
+    dotSizeSlider.addEventListener('input', (e) => {
+        document.getElementById('dot-size-val').innerText = `${e.target.value}%`;
     });
 
     // Plot Toggle
@@ -629,7 +647,7 @@ function updateTexture(type, config, material) {
         newTex = LensingTextures.createColorGridTexture();
         material.uniforms.u_grid_mode.value = 1.0;
     } else if (type === 'dotted-grid') {
-        newTex = LensingTextures.createDottedGridTexture(config.density);
+        newTex = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
     }
 
     if (newTex) {
@@ -661,6 +679,8 @@ function setBgMode(mode, config, material) {
         densitySlider.disabled = false;
         if (densityLabelText) densityLabelText.innerText = 'Galaxy Density';
 
+        if (groupDotSize) groupDotSize.style.display = 'none';
+
         // Reset to default 3 layers for Galaxies
         config.layers = 3;
         layersSlider.value = 3;
@@ -674,9 +694,11 @@ function setBgMode(mode, config, material) {
         if (mode === 'dotted-grid') {
             densitySlider.disabled = false;
             if (densityLabelText) densityLabelText.innerText = 'Grid Point Density';
+            if (groupDotSize) groupDotSize.style.display = 'block';
         } else {
             densitySlider.disabled = true;
             if (densityLabelText) densityLabelText.innerText = 'Galaxy Density';
+            if (groupDotSize) groupDotSize.style.display = 'none';
         }
     }
 }
@@ -866,7 +888,7 @@ function setupReshuffleButton(config, material) {
             newBg.wrapT = THREE.RepeatWrapping;
             material.uniforms.u_bg.value = newBg;
         } else if (LensingApp.currentMode === 'dotted-grid') {
-            const newBg = LensingTextures.createDottedGridTexture(config.density);
+            const newBg = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
             newBg.wrapS = THREE.RepeatWrapping;
             newBg.wrapT = THREE.RepeatWrapping;
             material.uniforms.u_bg.value = newBg;
@@ -899,6 +921,9 @@ function setupResetButton(config, defaultConfig, material) {
 
         brightSlider.value = 100;
         document.getElementById('bright-val').innerText = '100%';
+
+        dotSizeSlider.value = 100;
+        if (document.getElementById('dot-size-val')) document.getElementById('dot-size-val').innerText = '100%';
 
         coreCheck.checked = true;
         causticCheck.checked = false;
