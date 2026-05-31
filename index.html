@@ -25,6 +25,7 @@
 
         <link rel="stylesheet" href="css/styles.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="js/i18n.js"></script>
 
         <style>
             .model-options {
@@ -79,7 +80,10 @@
 
         <div id="ui-layer">
             <div class="ui-header">
-                <h1>Lensing Visualization</h1>
+                <div class="ui-title-wrap">
+                    <h1>Lensing Visualization</h1>
+                    <div id="lang-switcher"></div>
+                </div>
                 <button id="toggle-btn" title="Toggle Settings">–</button>
             </div>
 
@@ -217,7 +221,7 @@
 
                 <div class="control-group">
                     <label>
-                        Number Of Background Layers
+                        <span id="layers-label-text">Number Of Background Layers</span>
                         <span id="layers-val" class="value-display">3</span>
                     </label>
                     <input type="range" id="layers-slider" min="1" max="8" step="1" value="3" />
@@ -241,7 +245,7 @@
 
                 <div class="control-group">
                     <label>
-                        Galaxy Brightness
+                        <span id="bright-label-text">Galaxy Brightness</span>
                         <span id="bright-val" class="value-display">100%</span>
                     </label>
                     <input type="range" id="bright-slider" min="0" max="200" value="100" />
@@ -249,24 +253,24 @@
 
                 <div class="control-group" id="group-caustics" style="display:none;">
                     <label>
-                        Show Caustic Lines
+                        <span id="caustic-label-text">Show Caustic Lines</span>
                         <input type="checkbox" id="caustic-check" />
                     </label>
                     <div style="font-size: 0.65rem; text-align: right; margin-top: 6px; opacity: 0.85;">
-                        Based on <a href="https://github.com/lenstronomy/lenstronomy" target="_blank" style="color: #7affb5; text-decoration: none; border-bottom: 1px dashed #7affb5;">GitHub:lenstronomy</a>
+                        <a id="lenstronomy-link" href="https://github.com/lenstronomy/lenstronomy" target="_blank" style="color: #7affb5; text-decoration: none; border-bottom: 1px dashed #7affb5;">Based on GitHub:lenstronomy</a>
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label>
-                        Show Foreground Galaxies
+                        <span id="fg-label-text">Show Foreground Galaxies</span>
                         <input type="checkbox" id="fg-check" checked />
                     </label>
                 </div>
 
                 <div class="control-group">
                     <label>
-                        Show Cluster Member Galaxies
+                        <span id="cluster-label-text">Show Cluster Member Galaxies</span>
                         <input type="checkbox" id="cluster-check" checked />
                     </label>
                 </div>
@@ -280,7 +284,7 @@
 
                 <div class="control-group" id="group-plot-toggle" style="display:none;">
                     <label>
-                        Show Mass Distribution
+                        <span id="plot-label-text">Show Mass Distribution</span>
                         <input type="checkbox" id="plot-check" checked />
                     </label>
                     <div id="plot-container">

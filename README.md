@@ -1,10 +1,12 @@
+🇬🇧 [English](README.md) | 🇩🇪 [Deutsch](docs/README-de.md)
+
 # Visualizing Gravitational Lensing
 
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18914869-blue.svg)](https://doi.org/10.5281/zenodo.18914869) and [![arXiv](https://img.shields.io/badge/arXiv-2603.18145-b31b1b.svg)](https://arxiv.org/abs/2603.18145)
 
 
-[** Live Demo**](https://nicosmo.github.io/lensing_visualization/) 
+[** Live Demo**](https://nicosmo.github.io/lensing_visualization/)
 
 **Concept & Visualization by [Nico Schuster](https://orcid.org/0000-0001-5620-8554) and [Andres Salcedo](https://orcid.org/0000-0003-1420-527X)**
 
@@ -17,7 +19,7 @@ An interactive browser-based WebGL visualization that renders real-time gravitat
 
 
 ## Contributing & Feedback
-Contributions, feature suggestions, and bug reports are highly welcome! 
+Contributions, feature suggestions, and bug reports are highly welcome!
 * If you have an idea or found an issue, please open an issue on GitHub.
 * If you'd like to contribute code, feel free to fork the repository and submit a Pull Request.
 
@@ -35,12 +37,12 @@ Contributions, feature suggestions, and bug reports are highly welcome!
 * **Mass Distribution Plot:** Real-time 1D plot of the density profile $\delta(r)$ allows users to visualize the exact structure of the lens being simulated.
 
 ### Rendering & Procedural Generation
-* **Procedural Universe:** Background galaxies and the foreground cluster/void are generated procedurally using seeded random numbers. Every "Reshuffle" creates a unique, consistent star field.
-* **Parallax Depth:** Foreground stars, the cluster/void lens, and background layers move at different rates to simulate 3D space.
+* **Procedural Universe:** Background galaxies and the foreground cluster/void are generated procedurally using seeded random numbers. Every "Reshuffle" creates a unique, consistent galaxy field.
+* **Parallax Depth:** Foreground galaxies, the cluster/void lens, and background layers move at different rates to simulate 3D space.
 * **Custom Sprites:** Uses HTML5 Canvas to pre-render galaxy sprites (spirals and ellipticals) for high-performance rendering.
 
 ### Interactivity
-* **Dynamic Controls:** Adjust Cluster Mass, Spread (Einstein Radius), Galaxy Density, and Brightness in real-time.
+* **Dynamic Controls:** Adjust Cluster Mass, Spread, Galaxy Density, and Brightness in real-time.
 * **Advanced Void Controls:** Fine-tune void properties including Wall Density, Wall Width, Scale Radius ($r_s$), Inner Slope ($\alpha$), and Outer Slope ($\beta$).
 * **Custom Backgrounds:** Upload your own images to see how they are distorted by the lens. The repository contains an example image of the Hubble Ultra Deep Field for the background.
 * **Interactive Lens:** Drag the mouse to move the lens; click to lock it in place for inspection.
@@ -193,7 +195,7 @@ The density contrast is given by:
 $$\delta(r) = \delta_c \frac{1 - (r/r_s)^\alpha}{1 + (r/r_s)^\beta}$$
 
 Where:
-* $\delta_c$: Central density contrast (controlled by Mass slider)
+* $\delta_c$: Central density contrast (controlled by Inner Density slider)
 * $r_s$: Scale radius (controlled by Scale Radius slider)
 * $\alpha$: Inner slope, determining how steep the core is
 * $\beta$: Outer slope, determining how quickly the density returns to the cosmic mean
