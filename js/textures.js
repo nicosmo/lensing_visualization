@@ -62,9 +62,10 @@ function createBackgroundTexture(density) {
 
 /**
  * Generates a simple Black and White Grid for testing lensing distortions.
+ * @param {number} density - Density multiplier for grid spacing
  * @returns {THREE.CanvasTexture} The generated grid texture
  */
-function createBWGridTexture() {
+function createBWGridTexture(density = 1.0) {
     const isMobile = window.innerWidth < 768;
     const size = isMobile ? 1024 : 2048;
 
@@ -79,12 +80,14 @@ function createBWGridTexture() {
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ffffff';
 
-    const gridSize = 128;
-    const steps = size / gridSize;
+    const safeDensity = Math.max(density, 0.05);
+    const idealSpacing = 128 / safeDensity;
+    const steps = Math.max(1, Math.round(size / idealSpacing));
+    const spacing = size / steps;
 
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
-        const p = i * gridSize;
+        const p = i * spacing;
         ctx.moveTo(p, 0);
         ctx.lineTo(p, size);
         ctx.moveTo(0, p);
@@ -97,9 +100,10 @@ function createBWGridTexture() {
 
 /**
  * Generates a colored grid where vertical/horizontal lines have different colors.
+ * @param {number} density - Density multiplier for grid spacing
  * @returns {THREE.CanvasTexture} The generated color grid texture
  */
-function createColorGridTexture() {
+function createColorGridTexture(density = 1.0) {
     const isMobile = window.innerWidth < 768;
     const size = isMobile ? 1024 : 2048;
     const canvas = document.createElement('canvas');
@@ -110,14 +114,16 @@ function createColorGridTexture() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, size, size);
 
-    const gridSize = 128;
-    const steps = size / gridSize;
+    const safeDensity = Math.max(density, 0.05);
+    const idealSpacing = 128 / safeDensity;
+    const steps = Math.max(1, Math.round(size / idealSpacing));
+    const spacing = size / steps;
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ff00ff';
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
-        const p = i * gridSize;
+        const p = i * spacing;
         ctx.moveTo(p, 0);
         ctx.lineTo(p, size);
     }
@@ -126,7 +132,7 @@ function createColorGridTexture() {
     ctx.strokeStyle = '#00ffff';
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
-        const p = i * gridSize;
+        const p = i * spacing;
         ctx.moveTo(0, p);
         ctx.lineTo(size, p);
     }

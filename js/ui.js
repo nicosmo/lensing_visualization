@@ -29,9 +29,18 @@ let bgUploadInput;
 let uploadLabel;
 let dotSizeSlider;
 let groupDotSize;
+let brightLabelText;
 
 // UI State
 let isMin = false;
+
+function getLang() {
+    return (window.LensingApp && LensingApp.lang) || LensingI18n.currentLang || LensingI18n.getBrowserLang();
+}
+
+function t(key) {
+    return LensingI18n.t(key, getLang());
+}
 
 /**
  * Initialize all UI element references
@@ -78,6 +87,7 @@ function initUIElements() {
     bgUploadInput = document.getElementById('bg-upload');
     uploadLabel = document.getElementById('upload-label');
     densityLabelText = document.getElementById('density-label-text');
+    brightLabelText = document.getElementById('bright-label-text');
 
     dotSizeSlider = document.getElementById('dot-size-slider');
     groupDotSize = document.getElementById('group-dot-size');
@@ -277,11 +287,11 @@ function drawMassPlot(config, canvas) {
     ctx.textAlign = 'right';
 
     // Main Title
-    ctx.fillText('Density (δ) vs Radius', w - 6, 12);
+    ctx.fillText(t('densityVsRadius'), w - 6, 12);
 
     // Context-Sensitive Labels for the Vertical Marker
-    let markerLabel = 'Void Radius'; // Default for Toy (2) & HSW (3)
-    if (config.model === 1) markerLabel = 'Halo Radius'; // Specific for NFW
+    let markerLabel = t('voidRadiusLabel'); // Default for Toy (2) & HSW (3)
+    if (config.model === 1) markerLabel = t('haloRadius'); // Specific for NFW
 
     // Vertical Marker Label (Bottom)
     ctx.textAlign = 'center';
@@ -290,7 +300,7 @@ function drawMassPlot(config, canvas) {
     // Horizontal Axis Label (Mean Density) - positioned above the line
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText('Mean Density', 2, yZero + 12);
+    ctx.fillText(t('meanDensityLabel'), 2, yZero + 12);
 }
 
 
@@ -418,6 +428,16 @@ function setupSliders(config, material) {
             newBg.wrapS = THREE.RepeatWrapping;
             newBg.wrapT = THREE.RepeatWrapping;
             material.uniforms.u_bg.value = newBg;
+        } else if (LensingApp.currentMode === 'bw-grid') {
+            const newBg = LensingTextures.createBWGridTexture(config.density);
+            newBg.wrapS = THREE.RepeatWrapping;
+            newBg.wrapT = THREE.RepeatWrapping;
+            material.uniforms.u_bg.value = newBg;
+        } else if (LensingApp.currentMode === 'color-grid') {
+            const newBg = LensingTextures.createColorGridTexture(config.density);
+            newBg.wrapS = THREE.RepeatWrapping;
+            newBg.wrapT = THREE.RepeatWrapping;
+            material.uniforms.u_bg.value = newBg;
         } else if (LensingApp.currentMode === 'dotted-grid') {
             const newBg = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
             newBg.wrapS = THREE.RepeatWrapping;
@@ -525,9 +545,9 @@ function setModel(modelIndex, config) {
     }
 
     if (modelIndex === 2) { // Toy Model
-        massLabel.firstChild.textContent = 'Inner Density (% Mean)';
-        spreadLabel.firstChild.textContent = 'Void Radius';
-        coreLabel.childNodes[0].textContent = 'Show Void Boundary ';
+        massLabel.firstChild.textContent = t('innerDensityPercentMean');
+        spreadLabel.firstChild.textContent = t('voidRadius');
+        coreLabel.childNodes[0].textContent = `${t('showVoidBoundary')} `;
 
         groupWallD.style.display = 'block';
         groupWallW.style.display = 'block';
@@ -541,9 +561,9 @@ function setModel(modelIndex, config) {
         config.showCore = 1.0;
 
     } else if (modelIndex === 3) { // HSW Model
-        massLabel.firstChild.textContent = 'Inner Density (Delta_c)';
-        spreadLabel.firstChild.textContent = 'Void Radius';
-        coreLabel.childNodes[0].textContent = 'Show Void Boundary ';
+        massLabel.firstChild.textContent = t('innerDensityDeltaC');
+        spreadLabel.firstChild.textContent = t('voidRadius');
+        coreLabel.childNodes[0].textContent = `${t('showVoidBoundary')} `;
 
         groupHswRs.style.display = 'block';
         groupHswA.style.display = 'block';
@@ -572,9 +592,9 @@ function setModel(modelIndex, config) {
         updateHSWLookup(config);
 
     } else if (modelIndex === 4) { // Elliptical Halo
-        massLabel.firstChild.textContent = 'Cluster Mass';
-        spreadLabel.firstChild.textContent = 'Core Radius';
-        coreLabel.childNodes[0].textContent = 'Show Dark Matter Halo ';
+        massLabel.firstChild.textContent = t('clusterMass');
+        spreadLabel.firstChild.textContent = t('coreRadius');
+        coreLabel.childNodes[0].textContent = `${t('showDarkMatterHalo')} `;
 
         groupEllipticity.style.display = 'block';
         groupAngle.style.display = 'block';
@@ -597,9 +617,9 @@ function setModel(modelIndex, config) {
         document.getElementById('angle-val').innerText = '0';
 
     } else { // Point or NFW
-        massLabel.firstChild.textContent = 'Cluster Mass';
-        spreadLabel.firstChild.textContent = 'Cluster Spread';
-        coreLabel.childNodes[0].textContent = 'Show Dark Matter Halo ';
+        massLabel.firstChild.textContent = t('clusterMass');
+        spreadLabel.firstChild.textContent = t('clusterSpread');
+        coreLabel.childNodes[0].textContent = `${t('showDarkMatterHalo')} `;
 
         // ALWAYS reset to 100% when switching to a Cluster model
         // This ensures consistent behavior coming from ANY void settings
@@ -642,9 +662,9 @@ function updateTexture(type, config, material) {
     if (type === 'galaxies') {
         newTex = LensingTextures.createBackgroundTexture(config.density);
     } else if (type === 'bw-grid') {
-        newTex = LensingTextures.createBWGridTexture();
+        newTex = LensingTextures.createBWGridTexture(config.density);
     } else if (type === 'color-grid') {
-        newTex = LensingTextures.createColorGridTexture();
+        newTex = LensingTextures.createColorGridTexture(config.density);
         material.uniforms.u_grid_mode.value = 1.0;
     } else if (type === 'dotted-grid') {
         newTex = LensingTextures.createDottedGridTexture(config.density, config.dotSize);
@@ -675,9 +695,21 @@ function setBgMode(mode, config, material) {
 
     updateTexture(mode, config, material);
 
+    if (brightLabelText) {
+        brightLabelText.innerText = mode === 'galaxies' ? t('galaxyBrightness') : t('brightness');
+    }
+
     if (mode === 'galaxies') {
         densitySlider.disabled = false;
-        if (densityLabelText) densityLabelText.innerText = 'Galaxy Density';
+        densitySlider.min = 0;
+        densitySlider.max = 200;
+        if (parseFloat(densitySlider.value) > 200) {
+            densitySlider.value = 100;
+            document.getElementById('density-val').innerText = '100%';
+            config.density = 1.0;
+            updateTexture(mode, config, material);
+        }
+        if (densityLabelText) densityLabelText.innerText = t('galaxyDensity');
 
         if (groupDotSize) groupDotSize.style.display = 'none';
 
@@ -690,14 +722,14 @@ function setBgMode(mode, config, material) {
         config.layers = 1;
         layersSlider.value = 1;
         document.getElementById('layers-val').innerText = '1';
+        densitySlider.disabled = false;
+        densitySlider.min = 0;
+        densitySlider.max = 500;
+        if (densityLabelText) densityLabelText.innerText = t('gridDensity');
 
         if (mode === 'dotted-grid') {
-            densitySlider.disabled = false;
-            if (densityLabelText) densityLabelText.innerText = 'Grid Point Density';
             if (groupDotSize) groupDotSize.style.display = 'block';
         } else {
-            densitySlider.disabled = true;
-            if (densityLabelText) densityLabelText.innerText = 'Galaxy Density';
             if (groupDotSize) groupDotSize.style.display = 'none';
         }
     }
@@ -732,7 +764,7 @@ function updateLayerUI(config, material) {
 
         const name = document.createElement('span');
         name.className = 'layer-name';
-        name.innerText = `Layer ${index + 1}: ${layer.name}`;
+        name.innerText = `${t('layer')} ${index + 1}: ${layer.name}`;
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-layer-btn';
@@ -746,15 +778,15 @@ function updateLayerUI(config, material) {
 
     if (manualLayers.length > 0) {
         densitySlider.disabled = true;
-    } else if (LensingApp.currentMode === 'galaxies' || LensingApp.currentMode === 'dotted-grid') {
+    } else if (LensingApp.currentMode === 'galaxies' || LensingApp.currentMode === 'bw-grid' || LensingApp.currentMode === 'color-grid' || LensingApp.currentMode === 'dotted-grid') {
         densitySlider.disabled = false;
     }
 
     if (manualLayers.length === 0) {
-        uploadLabel.innerText = 'Add Own Background Image';
+        uploadLabel.innerText = t('addOwnBackgroundImage');
         uploadLabel.style.display = 'block';
     } else if (manualLayers.length < 8) {
-        uploadLabel.innerText = `Add Background Layer ${manualLayers.length + 1}`;
+        uploadLabel.innerText = `${t('addBackgroundLayer')} ${manualLayers.length + 1}`;
         uploadLabel.style.display = 'block';
     } else {
         uploadLabel.style.display = 'none';
@@ -787,6 +819,10 @@ function updateLayerUI(config, material) {
         if (manualLayers.length === 1) {
             material.uniforms.u_bg.value = manualLayers[0].texture;
         }
+    }
+
+    if (brightLabelText) {
+        brightLabelText.innerText = LensingApp.currentMode === 'galaxies' ? t('galaxyBrightness') : t('brightness');
     }
 }
 
@@ -849,13 +885,13 @@ function setupFileUpload(config, material) {
             };
             img.onerror = function () {
                 console.error('Error loading image from uploaded file:', file && file.name);
-                alert('Failed to load the image. The file may be corrupted or in an unsupported format.');
+                alert(t('imageLoadFailed'));
             };
             img.src = event.target.result;
         };
         reader.onerror = function () {
             console.error('Error reading uploaded file:', reader.error);
-            alert('Failed to read the selected file. Please try again with a valid image file.');
+            alert(t('fileReadFailed'));
         };
         reader.readAsDataURL(file);
         bgUploadInput.value = '';
@@ -955,6 +991,19 @@ function setupResetButton(config, defaultConfig, material) {
     });
 }
 
+function refreshLanguage() {
+    if (!LensingApp.config) return;
+    setModel(LensingApp.config.model, LensingApp.config);
+    updateLayerUI(LensingApp.config, LensingApp.material);
+    if (densityLabelText) {
+        densityLabelText.innerText = LensingApp.currentMode === 'galaxies' ? t('galaxyDensity') : t('gridDensity');
+    }
+    if (brightLabelText) {
+        brightLabelText.innerText = LensingApp.currentMode === 'galaxies' ? t('galaxyBrightness') : t('brightness');
+    }
+    LensingI18n.applyStaticText();
+}
+
 /**
  * Setup snapshot button
  * @param {THREE.WebGLRenderer} renderer - The Three.js renderer
@@ -1040,4 +1089,5 @@ window.LensingUI = {
     setModel,
     setBgMode,
     updateLayerUI,
+    refreshLanguage,
 };

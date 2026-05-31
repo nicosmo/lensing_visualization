@@ -59,6 +59,15 @@ function init() {
     LensingApp.config = { ...LensingApp.defaultConfig };
     const { config } = LensingApp;
 
+    LensingApp.lang = LensingI18n.setLanguage(LensingI18n.getBrowserLang());
+
+    window.addEventListener('lensing-language-change', (event) => {
+        LensingApp.lang = LensingI18n.setLanguage(event.detail.lang);
+        if (window.LensingUI && typeof LensingUI.refreshLanguage === 'function') {
+            LensingUI.refreshLanguage(LensingApp.lang);
+        }
+    });
+
     // Initialize galaxy factory sprites
     GalaxyFactory.init();
 
@@ -184,6 +193,12 @@ function init() {
         LensingApp.camera,
     );
 
+    if (typeof LensingUI.refreshLanguage === 'function') {
+        LensingUI.refreshLanguage();
+    }
+
+    LensingI18n.applyStaticText();
+
     // Start animation loop
     animate();
 }
@@ -278,14 +293,15 @@ function toggleLock(e) {
     const ind = document.getElementById('lock-indicator');
     const instruct = document.getElementById('instruct');
     const container = document.getElementById('canvas-container');
+    const lang = LensingApp.lang || LensingI18n.currentLang;
 
     if (LensingApp.isLocked) {
         ind.style.display = 'block';
-        instruct.innerText = 'Click to Unlock';
+        instruct.innerText = LensingI18n.t('clickToUnlock', lang);
         container.style.cursor = 'default';
     } else {
         ind.style.display = 'none';
-        instruct.innerText = 'Drag to move • Click to Lock';
+        instruct.innerText = LensingI18n.t('dragToMove', lang);
         container.style.cursor = 'crosshair';
 
         // Handle coordinates for both Mouse and Touch
