@@ -170,10 +170,19 @@ LensingI18n.getAvailableLanguages = function getAvailableLanguages() {
     return Object.keys(LensingI18n).filter((key) => typeof LensingI18n[key] === 'object' && LensingI18n[key] !== null);
 };
 
-LensingI18n.getLanguageLabel = function getLanguageLabel(code, uiLang = LensingI18n.currentLang) {
+LensingI18n.getLanguageLabel = function getLanguageLabel(code) {
+    const nativeLabels = {
+        en: 'English',
+        de: 'Deutsch',
+    };
+
+    if (nativeLabels[code]) {
+        return nativeLabels[code];
+    }
+
     try {
         if (typeof Intl !== 'undefined' && Intl.DisplayNames) {
-            const names = new Intl.DisplayNames([uiLang], { type: 'language' });
+            const names = new Intl.DisplayNames([code], { type: 'language' });
             const label = names.of(code);
             if (label) {
                 return label.charAt(0).toUpperCase() + label.slice(1);
@@ -183,11 +192,7 @@ LensingI18n.getLanguageLabel = function getLanguageLabel(code, uiLang = LensingI
         // Fall through to manual labels.
     }
 
-    const fallbackLabels = {
-        en: 'English',
-        de: 'Deutsch',
-    };
-    return fallbackLabels[code] || code.toUpperCase();
+    return code.toUpperCase();
 };
 
 LensingI18n.applyStaticText = function applyStaticText() {
